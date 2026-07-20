@@ -223,7 +223,7 @@ function updateProfileDOM() {
   const badge = document.getElementById('gemini-key-status-text');
   if (badge) {
     if (profile.geminiApiKey) {
-      badge.textContent = 'Gemini AI: Ready ✨';
+      badge.textContent = 'Gemini AI: Configured ✨';
       badge.className = 'text-xs font-bold text-emerald-400';
     } else {
       badge.textContent = 'Add Gemini Key 🔑';
@@ -607,50 +607,66 @@ async function generateAIText(type) {
 
   outputContainer.classList.remove('hidden');
 
-  // Check if Gemini API key exists
   const apiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
 
   if (apiKey) {
-    // Call Google Gemini API (gemini-1.5-flash)
     const activeBtn = type === 'cover-letter' ? btnCl : btnEmail;
     const originalText = activeBtn.innerHTML;
     activeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-pink-400"></i> Thinking with Gemini...`;
     activeBtn.disabled = true;
 
     outputTitle.innerHTML = `<i class="fa-solid fa-sparkles text-pink-400 animate-pulse"></i> Gemini AI ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'} (${tone})`;
-    outputText.textContent = 'Generating with Google Gemini AI...';
+    outputText.textContent = 'Connecting to Google Gemini AI...';
 
     const systemPrompt = type === 'cover-letter' 
       ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
       : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
 
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: systemPrompt }] }]
-        })
-      });
+    // Multi-Model Fallback Chain for Gemini API endpoints
+    const modelsToTry = [
+      'gemini-1.5-flash-latest',
+      'gemini-2.0-flash',
+      'gemini-2.5-flash',
+      'gemini-1.5-pro-latest',
+      'gemini-pro'
+    ];
 
-      const data = await response.json();
+    let success = false;
+    let lastErrorMsg = '';
 
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const generatedText = data.candidates[0].content.parts[0].text;
-        outputText.textContent = generatedText;
-        showToast(`Gemini AI generated ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'}!`);
-      } else if (data.error) {
-        outputText.textContent = `Gemini API Error: ${data.error.message}\n\nPlease check your Gemini API key in Profile Settings.`;
-      } else {
-        fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: systemPrompt }] }]
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          const generatedText = data.candidates[0].content.parts[0].text;
+          outputText.textContent = generatedText;
+          showToast(`Gemini AI (${modelName}) generated your content!`);
+          success = true;
+          break;
+        } else if (data.error) {
+          lastErrorMsg = data.error.message;
+        }
+      } catch (err) {
+        lastErrorMsg = err.message;
       }
-    } catch (err) {
-      fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
-      showToast('Offline fallback used.');
-    } finally {
-      activeBtn.innerHTML = originalText;
-      activeBtn.disabled = false;
     }
+
+    if (!success) {
+      outputText.textContent = `Gemini API Error: ${lastErrorMsg}\n\nPlease verify your Gemini API Key in Profile Settings or obtain a fresh free key at https://aistudio.google.com/app/apikey.`;
+      showToast('Gemini API key error');
+    }
+
+    activeBtn.innerHTML = originalText;
+    activeBtn.disabled = false;
   } else {
     fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
     showToast('Add Gemini API Key in Profile Settings for AI generations!');
