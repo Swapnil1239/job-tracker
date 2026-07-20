@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerFlow AI - Job Application Tracker & Apply Assistant</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <!-- Brand Logo -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <i class="fa-solid fa-rocket text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
+          <span>CareerFlow</span>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">AI Pro</span>
+        </h1>
+        <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Track Job Applications</p>
+      </div>
+    </div>
+
+    <!-- Central Search & Global Filters -->
+    <div class="flex-1 max-w-md hidden md:block">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input 
+          type="text" 
+          id="global-search" 
+          placeholder="Search by company, position, skills, or status..." 
+          class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+        >
+      </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex items-center gap-2.5">
+      <button id="btn-quick-copy" onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700 flex items-center gap-2 transition-all hover:scale-[1.02]">
+        <i class="fa-solid fa-id-card text-indigo-400"></i>
+        <span class="hidden sm:inline">Master Resume Profile</span>
+      </button>
+
+      <button id="btn-bookmarklet" onclick="openBookmarkletModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700 flex items-center gap-2 transition-all hover:scale-[1.02]">
+        <i class="fa-solid fa-bolt text-amber-400"></i>
+        <span class="hidden sm:inline">1-Click Clipper</span>
+      </button>
+
+      <button onclick="openAddJobModal()" class="glow-btn px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-2 transition-all">
+        <i class="fa-solid fa-plus text-sm"></i>
+        <span>Add Job</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SECONDARY HEADER: NAVIGATION TABS & DATA ACTIONS -->
+  <div class="bg-slate-900/60 border-b border-slate-800/80 px-4 sm:px-8 py-2.5 flex flex-wrap items-center justify-between gap-4">
+    <!-- View Tabs -->
+    <nav class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80">
+      <button onclick="switchTab('kanban')" id="tab-kanban" class="tab-btn active px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-indigo-400 bg-slate-800/90 shadow transition-all">
+        <i class="fa-solid fa-square-kanban"></i>
+        <span>Kanban Board</span>
+      </button>
+      
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Analytics Dashboard</span>
+      </button>
+
+      <button onclick="switchTab('table')" id="tab-table" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Applications Table</span>
+      </button>
+
+      <button onclick="switchTab('faster')" id="tab-faster" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all">
+        <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
+        <span>Apply Faster Hub</span>
+      </button>
+    </nav>
+
+    <!-- Right Controls: Status Filter, Backup, Export -->
+    <div class="flex items-center gap-3">
+      <select id="filter-work-mode" onchange="renderCurrentView()" class="bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+        <option value="ALL">All Work Modes</option>
+        <option value="Remote">Remote</option>
+        <option value="Hybrid">Hybrid</option>
+        <option value="Onsite">Onsite</option>
+      </select>
+
+      <div class="h-4 w-px bg-slate-800"></div>
+
+      <button onclick="exportDataJSON()" title="Export JSON Backup" class="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-xs flex items-center gap-1 transition-all">
+        <i class="fa-solid fa-download"></i>
+        <span class="text-[11px] hidden sm:inline">Export</span>
+      </button>
+
+      <label title="Import JSON Backup" class="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-xs flex items-center gap-1 cursor-pointer transition-all">
+        <i class="fa-solid fa-upload"></i>
+        <span class="text-[11px] hidden sm:inline">Import</span>
+        <input type="file" id="import-file-input" accept=".json" onchange="importDataJSON(event)" class="hidden">
+      </label>
+
+      <button onclick="loadSampleData()" title="Reset to Sample Data" class="p-2 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-800 text-xs transition-all">
+        <i class="fa-solid fa-rotate-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 px-4 sm:px-8 py-6 max-w-7xl w-full mx-auto">
+    
+    <!-- 1. KANBAN BOARD VIEW -->
+    <section id="view-kanban" class="view-section space-y-6">
+      <!-- Quick Reminder / Action Alerts Bar -->
+      <div id="action-reminders-banner" class="hidden glass-card p-4 rounded-2xl border-l-4 border-amber-500 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-bell text-lg"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-slate-100">Follow-up Alerts Ready</h4>
+            <p id="reminder-text" class="text-xs text-slate-300">You have applications waiting for follow-up emails.</p>
+          </div>
+        </div>
+        <button onclick="filterFollowUps()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition">
+          View Applications Due <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+
+      <!-- Kanban Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 overflow-x-auto pb-4">
+        <!-- Columns will be populated dynamically -->
+        <!-- Wishlist -->
+        <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Wishlist</h3>
+            </div>
+            <span id="count-Wishlist" class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-Wishlist" class="kanban-column flex-1 flex flex-col gap-3" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Wishlist')"></div>
+        </div>
+
+        <!-- Applied -->
+        <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Applied</h3>
+            </div>
+            <span id="count-Applied" class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-Applied" class="kanban-column flex-1 flex flex-col gap-3" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Applied')"></div>
+        </div>
+
+        <!-- Screening -->
+        <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Screening</h3>
+            </div>
+            <span id="count-Screening" class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-Screening" class="kanban-column flex-1 flex flex-col gap-3" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Screening')"></div>
+        </div>
+
+        <!-- Interview -->
+        <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Interviewing</h3>
+            </div>
+            <span id="count-Interviewing" class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-Interviewing" class="kanban-column flex-1 flex flex-col gap-3" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Interviewing')"></div>
+        </div>
+
+        <!-- Offer -->
+        <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Offered</h3>
+            </div>
+            <span id="count-Offered" class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-Offered" class="kanban-column flex-1 flex flex-col gap-3" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Offered')"></div>
+        </div>
+
+        <!-- Rejected -->
+        <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Rejected</h3>
+            </div>
+            <span id="count-Rejected" class="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="col-Rejected" class="kanban-column flex-1 flex flex-col gap-3" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Rejected')"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ANALYTICS DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view-section space-y-6 hidden">
+      <!-- Top Metrics Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass-card p-5 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Applications</p>
+            <h3 id="stat-total" class="text-3xl font-extrabold text-white mt-1">0</h3>
+            <p class="text-xs text-indigo-400 mt-1 flex items-center gap-1">
+              <i class="fa-solid fa-arrow-trend-up"></i> Active tracking
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-paper-plane"></i>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Interview Conversion</p>
+            <h3 id="stat-interview-rate" class="text-3xl font-extrabold text-amber-400 mt-1">0%</h3>
+            <p class="text-xs text-slate-400 mt-1">Screenings & Interviews</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Offers Received</p>
+            <h3 id="stat-offers" class="text-3xl font-extrabold text-emerald-400 mt-1">0</h3>
+            <p class="text-xs text-emerald-400 mt-1 flex items-center gap-1">
+              <i class="fa-solid fa-trophy"></i> High conversion
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-award"></i>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Weekly Goal</p>
+            <h3 id="stat-weekly-progress" class="text-3xl font-extrabold text-pink-400 mt-1">0 / 10</h3>
+            <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div id="weekly-goal-bar" class="bg-gradient-to-r from-pink-500 to-purple-500 h-full rounded-full w-0 transition-all duration-500"></div>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Status Breakdown Chart -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-1 flex flex-col justify-between">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-chart-pie text-indigo-400"></i> Application Status Funnel
+          </h3>
+          <div class="relative flex-1 min-h-[240px] flex items-center justify-center">
+            <canvas id="chart-status"></canvas>
+          </div>
+        </div>
+
+        <!-- Application Timeline & Velocity -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-pink-400"></i> Application Pace & Activity
+            </h3>
+            <span class="text-xs text-slate-400">Last 30 days</span>
+          </div>
+          <div class="relative flex-1 min-h-[240px]">
+            <canvas id="chart-timeline"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. APPLICATIONS TABLE VIEW -->
+    <section id="view-table" class="view-section space-y-4 hidden">
+      <div class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+        <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+          <h3 class="text-sm font-bold text-slate-200">All Applications Directory</h3>
+          <div class="flex items-center gap-2">
+            <select id="table-filter-status" onchange="renderTable()" class="bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 px-3 py-1.5 focus:outline-none">
+              <option value="ALL">All Statuses</option>
+              <option value="Wishlist">Wishlist</option>
+              <option value="Applied">Applied</option>
+              <option value="Screening">Screening</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Offered">Offered</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Company & Role</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Location / Mode</th>
+                <th class="py-3 px-4">Salary Range</th>
+                <th class="py-3 px-4">Date Applied</th>
+                <th class="py-3 px-4">Follow-up</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-slate-800/60 text-slate-300">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. APPLY FASTER HUB -->
+    <section id="view-faster" class="view-section space-y-6 hidden">
+      <!-- Hub Header Banner -->
+      <div class="glass-panel p-6 rounded-2xl border border-indigo-500/30 relative overflow-hidden">
+        <div class="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg text-white text-2xl">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white">Apply Faster Suite & AI Assistant</h2>
+            <p class="text-xs text-slate-300 mt-1 max-w-2xl">
+              Speed through job applications! Use 1-click clipboard snippets, auto-generate customized cover letters, write cold recruiter outreach emails, and match keywords against job descriptions.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Column: Master Profile 1-Click Copy Snippets -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card p-5 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list text-indigo-400"></i> 1-Click Quick Snippets
+              </h3>
+              <button onclick="openMasterProfileModal()" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Edit Profile</button>
+            </div>
+            
+            <p class="text-xs text-slate-400">Click any button below to instantly copy your standard application details to clipboard:</p>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-semibold">Full Name</span>
+                  <span id="snippet-name-val" class="font-medium text-slate-200">Alex Vance</span>
+                </div>
+                <button onclick="copySnippet('snippet-name-val', 'Full Name')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                  <i class="fa-regular fa-copy mr-1"></i> Copy
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-semibold">Email & Phone</span>
+                  <span id="snippet-contact-val" class="font-medium text-slate-200">alex.vance@example.com | (555) 019-2831</span>
+                </div>
+                <button onclick="copySnippet('snippet-contact-val', 'Contact Info')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                  <i class="fa-regular fa-copy mr-1"></i> Copy
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-semibold">LinkedIn Profile URL</span>
+                  <span id="snippet-linkedin-val" class="font-medium text-slate-200">linkedin.com/in/alexvance-dev</span>
+                </div>
+                <button onclick="copySnippet('snippet-linkedin-val', 'LinkedIn URL')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                  <i class="fa-regular fa-copy mr-1"></i> Copy
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-semibold">GitHub / Portfolio</span>
+                  <span id="snippet-portfolio-val" class="font-medium text-slate-200">github.com/alexvance-code</span>
+                </div>
+                <button onclick="copySnippet('snippet-portfolio-val', 'Portfolio URL')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                  <i class="fa-regular fa-copy mr-1"></i> Copy
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-semibold">Professional Summary</span>
+                  <span id="snippet-summary-val" class="font-medium text-slate-300 line-clamp-1">Full-stack software engineer with 5+ years building scalable web applications...</span>
+                </div>
+                <button onclick="copySnippet('snippet-summary-val', 'Professional Summary')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                  <i class="fa-regular fa-copy mr-1"></i> Copy
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-semibold">Standard "Why me?" pitch</span>
+                  <span id="snippet-pitch-val" class="font-medium text-slate-300 line-clamp-1">I thrive in fast-paced teams, focusing on code quality, modern UX, and delivering customer impact...</span>
+                </div>
+                <button onclick="copySnippet('snippet-pitch-val', 'Pitch')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                  <i class="fa-regular fa-copy mr-1"></i> Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: AI Cover Letter & Email Generator -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="glass-card p-5 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-robot text-purple-400"></i> Tailored Cover Letter & Email Generator
+              </h3>
+              <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Instant Assistant</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block text-slate-400 font-medium mb-1">Company Name</label>
+                <input type="text" id="ai-company" placeholder="e.g. Stripe, Vercel, Google" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+              </div>
+              <div>
+                <label class="block text-slate-400 font-medium mb-1">Target Position</label>
+                <input type="text" id="ai-position" placeholder="e.g. Senior Frontend Engineer" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+              </div>
+            </div>
+
+            <div class="text-xs">
+              <label class="block text-slate-400 font-medium mb-1">Paste Job Description snippet or Key Requirements</label>
+              <textarea id="ai-jd" rows="3" placeholder="Paste key requirements or job description text here..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">Tone:</span>
+                <select id="ai-tone" class="bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 px-3 py-1.5 focus:outline-none">
+                  <option value="Confident & Professional">Confident & Professional</option>
+                  <option value="Enthusiastic & High Energy">Enthusiastic & High Energy</option>
+                  <option value="Executive & Strategic">Executive & Strategic</option>
+                  <option value="Concise & Tech-Focused">Concise & Tech-Focused</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button onclick="generateAIText('cover-letter')" class="glow-btn px-3.5 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5">
+                  <i class="fa-solid fa-file-signature"></i> Cover Letter
+                </button>
+                <button onclick="generateAIText('cold-email')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-paper-plane text-indigo-400"></i> Cold Outreach Email
+                </button>
+              </div>
+            </div>
+
+            <!-- Output Box -->
+            <div id="ai-output-container" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span id="ai-output-title" class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Generated Result</span>
+                <button onclick="copyToClipboard(document.getElementById('ai-output-text').innerText, 'Generated Document')" class="text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg border border-slate-700 flex items-center gap-1">
+                  <i class="fa-regular fa-copy"></i> Copy Result
+                </button>
+              </div>
+              <div id="ai-output-text" class="bg-slate-950 p-4 rounded-xl text-xs text-slate-300 leading-relaxed font-mono border border-slate-800/80 whitespace-pre-wrap max-h-60 overflow-y-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- ADD / EDIT JOB MODAL -->
+  <div id="modal-job" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-800 p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-job-title" class="text-lg font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-briefcase text-indigo-400"></i> Add New Job Application
+        </h3>
+        <button onclick="closeJobModal()" class="text-slate-400 hover:text-white text-lg p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="form-job" onsubmit="saveJobForm(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="job-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Company Name *</label>
+            <input type="text" id="job-company" required placeholder="e.g. Stripe" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Position / Title *</label>
+            <input type="text" id="job-position" required placeholder="e.g. Senior Frontend Developer" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Status</label>
+            <select id="job-status" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+              <option value="Wishlist">Wishlist</option>
+              <option value="Applied" selected>Applied</option>
+              <option value="Screening">Screening</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Offered">Offered</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Work Mode</label>
+            <select id="job-workmode" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+              <option value="Remote">Remote</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Onsite">Onsite</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Salary Range</label>
+            <input type="text" id="job-salary" placeholder="e.g. $140,000 - $170,000" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Job URL / Link</label>
+            <input type="url" id="job-url" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Location</label>
+            <input type="text" id="job-location" placeholder="e.g. San Francisco, CA / Remote" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Date Applied</label>
+            <input type="date" id="job-date" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Follow-Up / Next Action Date</label>
+            <input type="date" id="job-followup" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Contact Person (Recruiter / Hiring Manager)</label>
+          <input type="text" id="job-contact" placeholder="e.g. Sarah Jenkins (sarah@company.com)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Job Description & Notes</label>
+          <textarea id="job-notes" rows="4" placeholder="Paste job requirements or personal preparation notes..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <button type="button" onclick="closeJobModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200">Cancel</button>
+          <button type="submit" class="glow-btn px-5 py-2 rounded-xl font-bold text-white">Save Application</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- VIEW JOB DETAIL MODAL -->
+  <div id="modal-detail" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-800 p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div>
+          <div class="flex items-center gap-3">
+            <h2 id="detail-company" class="text-xl font-extrabold text-white">Company</h2>
+            <span id="detail-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold">Status</span>
+          </div>
+          <p id="detail-position" class="text-sm font-medium text-indigo-400 mt-1">Position Title</p>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white text-lg p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+        <div>
+          <span class="text-slate-400 block font-medium">Work Mode</span>
+          <span id="detail-workmode" class="text-slate-200 font-semibold">-</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">Salary</span>
+          <span id="detail-salary" class="text-slate-200 font-semibold">-</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">Date Applied</span>
+          <span id="detail-date" class="text-slate-200 font-semibold">-</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block font-medium">Follow-Up</span>
+          <span id="detail-followup" class="text-slate-200 font-semibold">-</span>
+        </div>
+      </div>
+
+      <div id="detail-url-container" class="text-xs">
+        <span class="text-slate-400 block font-semibold mb-1">Job Link</span>
+        <a id="detail-url" href="#" target="_blank" class="text-indigo-400 hover:underline flex items-center gap-1.5 break-all">
+          <i class="fa-solid fa-up-right-from-square text-[10px]"></i> <span id="detail-url-text">Link</span>
+        </a>
+      </div>
+
+      <div id="detail-contact-container" class="text-xs">
+        <span class="text-slate-400 block font-semibold mb-1">Contact Person</span>
+        <p id="detail-contact" class="text-slate-200 font-medium"></p>
+      </div>
+
+      <div class="text-xs space-y-2">
+        <span class="text-slate-400 block font-semibold">Job Description & Personal Notes</span>
+        <div id="detail-notes" class="bg-slate-950 p-4 rounded-xl text-slate-300 leading-relaxed border border-slate-800 whitespace-pre-wrap"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+        <button id="btn-delete-job" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition">
+          <i class="fa-solid fa-trash mr-1"></i> Delete
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-ai-generate-job" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 transition flex items-center gap-1">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Cover Letter for this
+          </button>
+
+          <button id="btn-edit-job" class="glow-btn px-4 py-2 rounded-xl text-xs font-bold text-white">
+            <i class="fa-solid fa-pen mr-1"></i> Edit Application
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER PROFILE EDIT MODAL -->
+  <div id="modal-profile" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-800 p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-id-card text-indigo-400"></i> Master Application Profile
+        </h3>
+        <button onclick="closeMasterProfileModal()" class="text-slate-400 hover:text-white text-lg p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400">Save your standard response details here so you can 1-click copy them during rapid job applications!</p>
+
+      <form id="form-profile" onsubmit="saveProfileForm(event)" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Full Name</label>
+            <input type="text" id="prof-name" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Contact Details (Email / Phone)</label>
+            <input type="text" id="prof-contact" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">LinkedIn Profile URL</label>
+            <input type="text" id="prof-linkedin" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">GitHub / Portfolio URL</label>
+            <input type="text" id="prof-portfolio" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Professional Summary / Executive Bio</label>
+          <textarea id="prof-summary" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Elevator Pitch / "Why should we hire you?"</label>
+          <textarea id="prof-pitch" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <button type="button" onclick="closeMasterProfileModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200">Cancel</button>
+          <button type="submit" class="glow-btn px-5 py-2 rounded-xl font-bold text-white">Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BOOKMARKLET MODAL -->
+  <div id="modal-bookmarklet" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-xl rounded-2xl border border-slate-800 p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-bolt text-amber-400"></i> 1-Click Job Web Clipper
+        </h3>
+        <button onclick="closeBookmarkletModal()" class="text-slate-400 hover:text-white text-lg p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Save jobs directly from LinkedIn, Indeed, Greenhouse, or Lever into your tracker with 1 click!
+      </p>
+
+      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+        <span class="font-bold text-amber-400 uppercase tracking-wider block">How to setup:</span>
+        <ol class="list-decimal list-inside space-y-2 text-slate-300">
+          <li>Copy the script below.</li>
+          <li>In your web browser, create a new Bookmark (or drag this link to your Bookmark bar).</li>
+          <li>Set the URL of the bookmark to the code snippet below.</li>
+          <li>When you are on any Job page, click the bookmark to automatically extract title, company & URL!</li>
+        </ol>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400 font-semibold">Bookmarklet Code Snippet</span>
+          <button onclick="copyBookmarkletCode()" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+            <i class="fa-regular fa-copy"></i> Copy Code
+          </button>
+        </div>
+        <textarea id="bookmarklet-code" readonly rows="4" class="w-full bg-slate-950 p-3 rounded-xl text-slate-400 font-mono text-[11px] border border-slate-800 select-all"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- App Main JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
