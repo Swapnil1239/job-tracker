@@ -1,4 +1,4 @@
-/* CareerFlow AI - Application Logic & State Manager with Real-Time Server Sync */
+/* CareerFlow AI - Application Logic & State Manager with Real-Time Gemini AI Integration */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -11,7 +11,8 @@ let profile = {
   linkedin: 'https://linkedin.com/in/alexvance-dev',
   portfolio: 'https://github.com/alexvance-code',
   summary: 'Full-stack software engineer with 5+ years of experience building high-performance web applications, cloud microservices, and slick user interfaces with React, Node.js, and TypeScript.',
-  pitch: 'I excel at bringing ambitious products from zero to one. Passionate about system design, frontend performance, and delivering memorable developer and end-user experiences.'
+  pitch: 'I excel at bringing ambitious products from zero to one. Passionate about system design, frontend performance, and delivering memorable developer and end-user experiences.',
+  geminiApiKey: ''
 };
 
 let currentTab = 'kanban';
@@ -170,14 +171,10 @@ function loadStoredDataLocalOnly() {
 }
 
 async function syncDataToBackend() {
-  // 1. Save locally
   localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-
-  // 2. Render UI
   renderCurrentView();
 
-  // 3. Sync to server DB
   try {
     await fetch('/api/data', {
       method: 'POST',
@@ -221,6 +218,18 @@ function updateProfileDOM() {
   document.getElementById('prof-portfolio').value = profile.portfolio || '';
   document.getElementById('prof-summary').value = profile.summary || '';
   document.getElementById('prof-pitch').value = profile.pitch || '';
+  document.getElementById('prof-gemini-key').value = profile.geminiApiKey || '';
+
+  const badge = document.getElementById('gemini-key-status-text');
+  if (badge) {
+    if (profile.geminiApiKey) {
+      badge.textContent = 'Gemini AI: Ready ✨';
+      badge.className = 'text-xs font-bold text-emerald-400';
+    } else {
+      badge.textContent = 'Add Gemini Key 🔑';
+      badge.className = 'text-xs font-bold text-amber-400';
+    }
+  }
 }
 
 // Event Listeners Setup
@@ -568,7 +577,7 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & AI GENERATOR
+// 4. APPLY FASTER HUB & REAL-TIME GEMINI AI GENERATOR
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -584,7 +593,7 @@ function copyToClipboard(text, label) {
   });
 }
 
-function generateAIText(type) {
+async function generateAIText(type) {
   const company = document.getElementById('ai-company').value.trim() || 'Target Company';
   const position = document.getElementById('ai-position').value.trim() || 'Software Engineer';
   const jd = document.getElementById('ai-jd').value.trim();
@@ -593,13 +602,66 @@ function generateAIText(type) {
   const outputContainer = document.getElementById('ai-output-container');
   const outputTitle = document.getElementById('ai-output-title');
   const outputText = document.getElementById('ai-output-text');
+  const btnCl = document.getElementById('btn-generate-cl');
+  const btnEmail = document.getElementById('btn-generate-email');
 
   outputContainer.classList.remove('hidden');
 
+  // Check if Gemini API key exists
+  const apiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
+
+  if (apiKey) {
+    // Call Google Gemini API (gemini-1.5-flash)
+    const activeBtn = type === 'cover-letter' ? btnCl : btnEmail;
+    const originalText = activeBtn.innerHTML;
+    activeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-pink-400"></i> Thinking with Gemini...`;
+    activeBtn.disabled = true;
+
+    outputTitle.innerHTML = `<i class="fa-solid fa-sparkles text-pink-400 animate-pulse"></i> Gemini AI ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'} (${tone})`;
+    outputText.textContent = 'Generating with Google Gemini AI...';
+
+    const systemPrompt = type === 'cover-letter' 
+      ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
+      : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const generatedText = data.candidates[0].content.parts[0].text;
+        outputText.textContent = generatedText;
+        showToast(`Gemini AI generated ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'}!`);
+      } else if (data.error) {
+        outputText.textContent = `Gemini API Error: ${data.error.message}\n\nPlease check your Gemini API key in Profile Settings.`;
+      } else {
+        fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+      }
+    } catch (err) {
+      fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+      showToast('Offline fallback used.');
+    } finally {
+      activeBtn.innerHTML = originalText;
+      activeBtn.disabled = false;
+    }
+  } else {
+    fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+    showToast('Add Gemini API Key in Profile Settings for AI generations!');
+  }
+}
+
+function fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText) {
   let generated = '';
 
   if (type === 'cover-letter') {
-    outputTitle.textContent = `Generated Cover Letter (${tone})`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-file-signature text-indigo-400"></i> Local Template Cover Letter (${tone})`;
     generated = `Dear Hiring Manager at ${company},
 
 I am writing to express my strong enthusiasm for the ${position} role at ${company}. With over 5 years of software engineering experience specializing in high-performance web applications and cloud architectures, I have closely followed ${company}'s innovations and product vision.
@@ -615,9 +677,12 @@ Best regards,
 
 ${profile.name}
 ${profile.contact}
-${profile.linkedin}`;
+${profile.linkedin}
+
+---------------------------------------------------
+💡 Tip: Enter a free Gemini API Key in Profile Settings to generate deep AI cover letters with Gemini 1.5 Flash!`;
   } else if (type === 'cold-email') {
-    outputTitle.textContent = `Generated Cold Recruiter Email (${tone})`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-paper-plane text-indigo-400"></i> Local Template Cold Email (${tone})`;
     generated = `Subject: Expressing Interest: ${position} at ${company} - ${profile.name}
 
 Hi [Recruiter/Hiring Manager Name],
@@ -636,11 +701,13 @@ Best,
 
 ${profile.name}
 ${profile.contact}
-${profile.linkedin}`;
+${profile.linkedin}
+
+---------------------------------------------------
+💡 Tip: Enter a free Gemini API Key in Profile Settings to generate deep AI email templates!`;
   }
 
   outputText.textContent = generated;
-  showToast(`Generated tailored ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'}!`);
 }
 
 function isFollowUpDue(job) {
@@ -832,12 +899,13 @@ function saveProfileForm(e) {
     linkedin: document.getElementById('prof-linkedin').value.trim(),
     portfolio: document.getElementById('prof-portfolio').value.trim(),
     summary: document.getElementById('prof-summary').value.trim(),
-    pitch: document.getElementById('prof-pitch').value.trim()
+    pitch: document.getElementById('prof-pitch').value.trim(),
+    geminiApiKey: document.getElementById('prof-gemini-key').value.trim()
   };
 
   saveProfileData();
   closeMasterProfileModal();
-  showToast('Master Profile updated successfully!');
+  showToast('Profile & Gemini API key saved!');
 }
 
 function openBookmarkletModal() {

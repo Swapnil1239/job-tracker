@@ -52,7 +52,9 @@
       <div>
         <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
           <span>CareerFlow</span>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">AI Pro</span>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+            <i class="fa-solid fa-sparkles text-[10px] text-pink-400"></i> Powered by Gemini AI
+          </span>
         </h1>
         <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Track Job Applications</p>
       </div>
@@ -166,7 +168,6 @@
 
       <!-- Kanban Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 overflow-x-auto pb-4">
-        <!-- Columns will be populated dynamically -->
         <!-- Wishlist -->
         <div class="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800/80 p-3 min-w-[260px]">
           <div class="flex items-center justify-between pb-3 border-b border-slate-800/60 mb-3 px-1">
@@ -366,17 +367,28 @@
     <section id="view-faster" class="view-section space-y-6 hidden">
       <!-- Hub Header Banner -->
       <div class="glass-panel p-6 rounded-2xl border border-indigo-500/30 relative overflow-hidden">
-        <div class="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg text-white text-2xl">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <div class="absolute right-0 top-0 w-96 h-96 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg text-white text-2xl">
+              <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>Apply Faster Suite</span>
+                <span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-semibold">Gemini AI Engine</span>
+              </h2>
+              <p class="text-xs text-slate-300 mt-1 max-w-2xl">
+                Speed through job applications! Use 1-click clipboard snippets, auto-generate customized cover letters powered by Google Gemini AI, write cold recruiter outreach emails, and match requirements.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 class="text-lg font-bold text-white">Apply Faster Suite & AI Assistant</h2>
-            <p class="text-xs text-slate-300 mt-1 max-w-2xl">
-              Speed through job applications! Use 1-click clipboard snippets, auto-generate customized cover letters, write cold recruiter outreach emails, and match keywords against job descriptions.
-            </p>
-          </div>
+
+          <!-- Gemini Key Badge / Button -->
+          <button onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/30 flex items-center gap-2 transition shadow">
+            <i class="fa-solid fa-key text-pink-400"></i>
+            <span id="gemini-key-status-text">Gemini API Key: Configured</span>
+          </button>
         </div>
       </div>
 
@@ -457,14 +469,14 @@
           </div>
         </div>
 
-        <!-- Right Column: AI Cover Letter & Email Generator -->
+        <!-- Right Column: Gemini AI Cover Letter & Email Generator -->
         <div class="lg:col-span-7 space-y-4">
           <div class="glass-card p-5 rounded-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
-                <i class="fa-solid fa-robot text-purple-400"></i> Tailored Cover Letter & Email Generator
+                <i class="fa-solid fa-sparkles text-pink-400"></i> Gemini AI Cover Letter & Email Writer
               </h3>
-              <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Instant Assistant</span>
+              <span class="text-[10px] uppercase font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Gemini 1.5 Flash</span>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -495,10 +507,10 @@
               </div>
 
               <div class="flex items-center gap-2">
-                <button onclick="generateAIText('cover-letter')" class="glow-btn px-3.5 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5">
-                  <i class="fa-solid fa-file-signature"></i> Cover Letter
+                <button id="btn-generate-cl" onclick="generateAIText('cover-letter')" class="glow-btn px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Cover Letter
                 </button>
-                <button onclick="generateAIText('cold-email')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+                <button id="btn-generate-email" onclick="generateAIText('cold-email')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-2 transition">
                   <i class="fa-solid fa-paper-plane text-indigo-400"></i> Cold Outreach Email
                 </button>
               </div>
@@ -507,12 +519,14 @@
             <!-- Output Box -->
             <div id="ai-output-container" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-2">
               <div class="flex items-center justify-between">
-                <span id="ai-output-title" class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Generated Result</span>
+                <span id="ai-output-title" class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i class="fa-solid fa-sparkles text-pink-400"></i> Result
+                </span>
                 <button onclick="copyToClipboard(document.getElementById('ai-output-text').innerText, 'Generated Document')" class="text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg border border-slate-700 flex items-center gap-1">
                   <i class="fa-regular fa-copy"></i> Copy Result
                 </button>
               </div>
-              <div id="ai-output-text" class="bg-slate-950 p-4 rounded-xl text-xs text-slate-300 leading-relaxed font-mono border border-slate-800/80 whitespace-pre-wrap max-h-60 overflow-y-auto"></div>
+              <div id="ai-output-text" class="bg-slate-950 p-4 rounded-xl text-xs text-slate-300 leading-relaxed font-mono border border-slate-800/80 whitespace-pre-wrap max-h-72 overflow-y-auto"></div>
             </div>
           </div>
         </div>
@@ -689,16 +703,30 @@
     <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-800 p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <i class="fa-solid fa-id-card text-indigo-400"></i> Master Application Profile
+          <i class="fa-solid fa-id-card text-indigo-400"></i> Master Application Profile & Gemini Settings
         </h3>
         <button onclick="closeMasterProfileModal()" class="text-slate-400 hover:text-white text-lg p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">Save your standard response details here so you can 1-click copy them during rapid job applications!</p>
+      <p class="text-xs text-slate-400">Save your details and Google Gemini API key to generate intelligent, tailored cover letters!</p>
 
       <form id="form-profile" onsubmit="saveProfileForm(event)" class="space-y-4 text-xs">
+        <!-- Gemini API Key Section -->
+        <div class="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-purple-300 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-key text-pink-400"></i> Google Gemini API Key
+            </label>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
+              Get free key at Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
+          <input type="password" id="prof-gemini-key" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-purple-500">
+          <p class="text-[11px] text-slate-400">Your key is stored privately in your local browser storage.</p>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-slate-300 font-semibold mb-1">Full Name</label>
@@ -733,7 +761,7 @@
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
           <button type="button" onclick="closeMasterProfileModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200">Cancel</button>
-          <button type="submit" class="glow-btn px-5 py-2 rounded-xl font-bold text-white">Save Profile</button>
+          <button type="submit" class="glow-btn px-5 py-2 rounded-xl font-bold text-white">Save Profile & API Key</button>
         </div>
       </form>
     </div>
