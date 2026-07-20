@@ -213,22 +213,22 @@ function loadSampleData() {
 
 // Profile DOM Binding
 function updateProfileDOM() {
-  document.getElementById('snippet-name-val').textContent = profile.name || 'Your Name';
-  document.getElementById('snippet-contact-val').textContent = profile.contact || 'Email / Phone';
-  document.getElementById('snippet-linkedin-val').textContent = profile.linkedin || 'LinkedIn URL';
+  if (document.getElementById('snippet-name-val')) document.getElementById('snippet-name-val').textContent = profile.name || 'Your Name';
+  if (document.getElementById('snippet-contact-val')) document.getElementById('snippet-contact-val').textContent = profile.contact || 'Email / Phone';
+  if (document.getElementById('snippet-linkedin-val')) document.getElementById('snippet-linkedin-val').textContent = profile.linkedin || 'LinkedIn URL';
   if (document.getElementById('snippet-education-val')) {
     document.getElementById('snippet-education-val').textContent = `${profile.eduDegree || 'Degree'} - ${profile.eduSchool || 'University'}`;
   }
   if (document.getElementById('snippet-achievements-val')) {
     document.getElementById('snippet-achievements-val').textContent = profile.achievements || 'Achievements & Certifications';
   }
-  document.getElementById('snippet-summary-val').textContent = profile.summary || 'Summary...';
-  document.getElementById('snippet-pitch-val').textContent = profile.pitch || 'Pitch...';
+  if (document.getElementById('snippet-summary-val')) document.getElementById('snippet-summary-val').textContent = profile.summary || 'Summary...';
+  if (document.getElementById('snippet-pitch-val')) document.getElementById('snippet-pitch-val').textContent = profile.pitch || 'Pitch...';
 
-  document.getElementById('prof-name').value = profile.name || '';
-  document.getElementById('prof-contact').value = profile.contact || '';
-  document.getElementById('prof-linkedin').value = profile.linkedin || '';
-  document.getElementById('prof-portfolio').value = profile.portfolio || '';
+  if (document.getElementById('prof-name')) document.getElementById('prof-name').value = profile.name || '';
+  if (document.getElementById('prof-contact')) document.getElementById('prof-contact').value = profile.contact || '';
+  if (document.getElementById('prof-linkedin')) document.getElementById('prof-linkedin').value = profile.linkedin || '';
+  if (document.getElementById('prof-portfolio')) document.getElementById('prof-portfolio').value = profile.portfolio || '';
 
   if (document.getElementById('prof-edu-degree')) document.getElementById('prof-edu-degree').value = profile.eduDegree || '';
   if (document.getElementById('prof-edu-school')) document.getElementById('prof-edu-school').value = profile.eduSchool || '';
@@ -238,9 +238,9 @@ function updateProfileDOM() {
   if (document.getElementById('prof-work-bullets')) document.getElementById('prof-work-bullets').value = profile.workBullets || '';
   if (document.getElementById('prof-achievements')) document.getElementById('prof-achievements').value = profile.achievements || '';
 
-  document.getElementById('prof-summary').value = profile.summary || '';
-  document.getElementById('prof-pitch').value = profile.pitch || '';
-  document.getElementById('prof-gemini-key').value = profile.geminiApiKey || '';
+  if (document.getElementById('prof-summary')) document.getElementById('prof-summary').value = profile.summary || '';
+  if (document.getElementById('prof-pitch')) document.getElementById('prof-pitch').value = profile.pitch || '';
+  if (document.getElementById('prof-gemini-key')) document.getElementById('prof-gemini-key').value = profile.geminiApiKey || '';
   if (document.getElementById('prof-groq-key')) {
     document.getElementById('prof-groq-key').value = profile.groqApiKey || '';
   }
@@ -1382,9 +1382,21 @@ function deleteJob(jobId) {
   }
 }
 
-function openMasterProfileModal() {
+function openMasterProfileModal(focusTargetId) {
   updateProfileDOM();
-  document.getElementById('modal-profile').classList.remove('hidden');
+  const modal = document.getElementById('modal-profile');
+  if (modal) {
+    modal.classList.remove('hidden');
+    if (focusTargetId) {
+      setTimeout(() => {
+        const target = document.getElementById(focusTargetId);
+        if (target) {
+          target.focus();
+          target.select ? target.select() : null;
+        }
+      }, 100);
+    }
+  }
 }
 
 function closeMasterProfileModal() {

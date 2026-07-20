@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.4.0">
+  <link rel="stylesheet" href="styles.css?v=1.5.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -78,9 +78,9 @@
 
     <!-- Quick Action Buttons -->
     <div class="flex items-center gap-2.5">
-      <button id="btn-quick-copy" onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center gap-2 transition-all hover:scale-[1.02]">
-        <i class="fa-solid fa-user-gear text-indigo-400"></i>
-        <span class="hidden sm:inline">Master Resume Profile & Experience</span>
+      <button id="btn-quick-copy" onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border border-indigo-400/40 flex items-center gap-2 transition-all hover:scale-[1.02] shadow-lg">
+        <i class="fa-solid fa-user-pen"></i>
+        <span>Edit Profile & Experience</span>
       </button>
 
       <button id="btn-bookmarklet" onclick="openBookmarkletModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700 flex items-center gap-2 transition-all hover:scale-[1.02]">
@@ -388,9 +388,9 @@
           </div>
 
           <!-- AI Key Badge / Button -->
-          <button onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/30 flex items-center gap-2 transition shadow">
-            <i class="fa-solid fa-id-card text-pink-400"></i>
-            <span id="gemini-key-status-text">Edit Master Profile Data</span>
+          <button onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/40 flex items-center gap-2 transition shadow">
+            <i class="fa-solid fa-user-pen text-indigo-400"></i>
+            <span id="gemini-key-status-text">Edit Master Profile & Experience</span>
           </button>
         </div>
       </div>
@@ -484,74 +484,80 @@
           <div class="glass-card p-5 rounded-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-list text-indigo-400"></i> 1-Click Quick Snippets
+                <i class="fa-solid fa-id-card text-indigo-400"></i> Master Profile Quick Snippets
               </h3>
-              <button onclick="openMasterProfileModal()" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Edit Profile</button>
+              <button onclick="openMasterProfileModal()" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20 flex items-center gap-1 transition">
+                <i class="fa-solid fa-pen"></i> Edit Profile Data
+              </button>
             </div>
             
-            <p class="text-xs text-slate-400">Click any button below to instantly copy your standard application details to clipboard:</p>
+            <p class="text-xs text-slate-400">Click any snippet below or click "Edit Profile Data" to update your career history:</p>
 
             <div class="space-y-2.5 text-xs">
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+              <div onclick="openMasterProfileModal('prof-name')" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 cursor-pointer transition">
                 <div>
                   <span class="text-slate-400 block text-[10px] uppercase font-semibold">Full Name</span>
                   <span id="snippet-name-val" class="font-medium text-slate-200">Alex Vance</span>
                 </div>
-                <button onclick="copySnippet('snippet-name-val', 'Full Name')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                <button onclick="event.stopPropagation(); copySnippet('snippet-name-val', 'Full Name')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
                   <i class="fa-regular fa-copy mr-1"></i> Copy
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+              <div onclick="openMasterProfileModal('prof-contact')" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 cursor-pointer transition">
                 <div>
                   <span class="text-slate-400 block text-[10px] uppercase font-semibold">Email & Phone</span>
                   <span id="snippet-contact-val" class="font-medium text-slate-200">alex.vance@example.com | (555) 019-2831</span>
                 </div>
-                <button onclick="copySnippet('snippet-contact-val', 'Contact Info')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                <button onclick="event.stopPropagation(); copySnippet('snippet-contact-val', 'Contact Info')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
                   <i class="fa-regular fa-copy mr-1"></i> Copy
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+              <div onclick="openMasterProfileModal('prof-linkedin')" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 cursor-pointer transition">
                 <div>
                   <span class="text-slate-400 block text-[10px] uppercase font-semibold">LinkedIn Profile URL</span>
                   <span id="snippet-linkedin-val" class="font-medium text-slate-200">linkedin.com/in/alexvance-dev</span>
                 </div>
-                <button onclick="copySnippet('snippet-linkedin-val', 'LinkedIn URL')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                <button onclick="event.stopPropagation(); copySnippet('snippet-linkedin-val', 'LinkedIn URL')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
                   <i class="fa-regular fa-copy mr-1"></i> Copy
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+              <div onclick="openMasterProfileModal('prof-edu-degree')" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 cursor-pointer transition">
                 <div>
                   <span class="text-slate-400 block text-[10px] uppercase font-semibold">Education</span>
                   <span id="snippet-education-val" class="font-medium text-slate-200 line-clamp-1">B.S. in Computer Science - State University</span>
                 </div>
-                <button onclick="copySnippet('snippet-education-val', 'Education')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                <button onclick="event.stopPropagation(); copySnippet('snippet-education-val', 'Education')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
                   <i class="fa-regular fa-copy mr-1"></i> Copy
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+              <div onclick="openMasterProfileModal('prof-summary')" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 cursor-pointer transition">
                 <div>
                   <span class="text-slate-400 block text-[10px] uppercase font-semibold">Professional Summary</span>
                   <span id="snippet-summary-val" class="font-medium text-slate-300 line-clamp-1">Full-stack software engineer with 5+ years building scalable web applications...</span>
                 </div>
-                <button onclick="copySnippet('snippet-summary-val', 'Professional Summary')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                <button onclick="event.stopPropagation(); copySnippet('snippet-summary-val', 'Professional Summary')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
                   <i class="fa-regular fa-copy mr-1"></i> Copy
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 transition">
+              <div onclick="openMasterProfileModal('prof-achievements')" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 cursor-pointer transition">
                 <div>
                   <span class="text-slate-400 block text-[10px] uppercase font-semibold">Achievements</span>
                   <span id="snippet-achievements-val" class="font-medium text-slate-300 line-clamp-1">AWS Certified Solutions Architect, 1st place in Hackathon</span>
                 </div>
-                <button onclick="copySnippet('snippet-achievements-val', 'Achievements')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
+                <button onclick="event.stopPropagation(); copySnippet('snippet-achievements-val', 'Achievements')" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition">
                   <i class="fa-regular fa-copy mr-1"></i> Copy
                 </button>
               </div>
             </div>
+
+            <button onclick="openMasterProfileModal()" class="w-full py-2 rounded-xl text-xs font-bold bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-pen-to-square"></i> Open Full Profile Editor
+            </button>
           </div>
         </div>
 
@@ -796,14 +802,14 @@
     <div class="glass-panel w-full max-w-3xl rounded-2xl border border-slate-800 p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <i class="fa-solid fa-user-gear text-indigo-400"></i> Master Application Profile & Career Bank
+          <i class="fa-solid fa-user-pen text-indigo-400"></i> Master Profile & Career Bank Editor
         </h3>
         <button onclick="closeMasterProfileModal()" class="text-slate-400 hover:text-white text-lg p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">Add your actual education, work experience history, and key achievements here so the AI engine can tailor your real background into an ATS-winning PDF resume!</p>
+      <p class="text-xs text-slate-400">Edit your full name, contact, education, work experience, and achievements below. Click <strong>Save Master Profile Data</strong> when done!</p>
 
       <form id="form-profile" onsubmit="saveProfileForm(event)" class="space-y-4 text-xs">
         
@@ -842,22 +848,22 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-slate-300 font-semibold mb-1">Full Name *</label>
-            <input type="text" id="prof-name" placeholder="e.g. Swapnil Sahare" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+            <input type="text" id="prof-name" placeholder="e.g. Swapnil Sahare" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
           </div>
           <div>
             <label class="block text-slate-300 font-semibold mb-1">Contact Details (Email & Phone) *</label>
-            <input type="text" id="prof-contact" placeholder="e.g. swapnil@example.com | +1 (555) 019-2831" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+            <input type="text" id="prof-contact" placeholder="e.g. swapnil@example.com | +1 (555) 019-2831" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-slate-300 font-semibold mb-1">LinkedIn Profile URL</label>
-            <input type="text" id="prof-linkedin" placeholder="https://linkedin.com/in/..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+            <input type="text" id="prof-linkedin" placeholder="https://linkedin.com/in/..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
           </div>
           <div>
             <label class="block text-slate-300 font-semibold mb-1">GitHub / Portfolio URL</label>
-            <input type="text" id="prof-portfolio" placeholder="https://github.com/..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500">
+            <input type="text" id="prof-portfolio" placeholder="https://github.com/..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
           </div>
         </div>
 
@@ -869,15 +875,15 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label class="block text-slate-400 mb-1">Degree / Qualification</label>
-              <input type="text" id="prof-edu-degree" placeholder="e.g. B.S. in Computer Science" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+              <input type="text" id="prof-edu-degree" placeholder="e.g. B.S. in Computer Science" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
             </div>
             <div>
               <label class="block text-slate-400 mb-1">University / School</label>
-              <input type="text" id="prof-edu-school" placeholder="e.g. State University" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+              <input type="text" id="prof-edu-school" placeholder="e.g. State University" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
             </div>
             <div>
               <label class="block text-slate-400 mb-1">Graduation Year / Honors</label>
-              <input type="text" id="prof-edu-year" placeholder="e.g. 2018 - 2022 | Honors Graduate" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+              <input type="text" id="prof-edu-year" placeholder="e.g. 2018 - 2022 | Honors Graduate" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
             </div>
           </div>
         </div>
@@ -889,11 +895,11 @@
           </h4>
           <div>
             <label class="block text-slate-400 mb-1">Recent Job Title & Company</label>
-            <input type="text" id="prof-work-title" placeholder="e.g. Senior Full Stack Engineer at TechScale Solutions (2023 - Present)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200">
+            <input type="text" id="prof-work-title" placeholder="e.g. Senior Full Stack Engineer at TechScale Solutions (2023 - Present)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
           </div>
           <div>
             <label class="block text-slate-400 mb-1">Key Responsibilities & Bullet Points</label>
-            <textarea id="prof-work-bullets" rows="3" placeholder="• Engineered REST microservices serving 500k+ users...&#10;• Reduced latency by 40% using modern state management...&#10;• Led cross-functional team of 6 software engineers..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200"></textarea>
+            <textarea id="prof-work-bullets" rows="3" placeholder="• Engineered REST microservices serving 500k+ users...&#10;• Reduced latency by 40% using modern state management...&#10;• Led cross-functional team of 6 software engineers..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:border-indigo-500 focus:outline-none"></textarea>
           </div>
         </div>
 
@@ -902,7 +908,7 @@
           <h4 class="font-extrabold text-indigo-400 text-xs uppercase tracking-wider flex items-center gap-2">
             <i class="fa-solid fa-trophy"></i> Key Achievements & Certifications
           </h4>
-          <textarea id="prof-achievements" rows="2" placeholder="e.g. AWS Certified Solutions Architect | 1st Place Hackathon Winner | Awarded Developer of the Year 2025" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200"></textarea>
+          <textarea id="prof-achievements" rows="2" placeholder="e.g. AWS Certified Solutions Architect | 1st Place Hackathon Winner | Awarded Developer of the Year 2025" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:border-indigo-500 focus:outline-none"></textarea>
         </div>
 
         <div>
@@ -964,7 +970,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.4.0 -->
-  <script src="app.js?v=1.4.0"></script>
+  <!-- App Main JavaScript with Cache Busting v1.5.0 -->
+  <script src="app.js?v=1.5.0"></script>
 </body>
 </html>
