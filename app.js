@@ -1,4 +1,4 @@
-/* CareerFlow AI - Multi-Engine AI Integration + AI Resume Studio with Overleaf Official API Integration */
+/* CareerFlow AI - Multi-Engine AI Integration + Built-in 1-Click PDF Resume Studio */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDataFromBackend();
   setupEventListeners();
   updateBookmarkletSnippet();
+  renderLiveResumePreview();
 });
 
 // State Persistence & Synchronization
@@ -581,7 +582,7 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & AI RESUME / OVERLEAF TAILORING STUDIO
+// 4. APPLY FASTER HUB & BUILT-IN VISUAL PDF RESUME STUDIO
 function extractJobFromURL() {
   const urlInput = document.getElementById('resume-job-url')?.value.trim();
   if (!urlInput) {
@@ -603,79 +604,159 @@ function extractJobFromURL() {
   }
 }
 
-// Official Overleaf Direct API POST Form Submission
-function openInOverleafDirect() {
-  const code = document.getElementById('resume-output-code')?.value.trim();
-  if (!code) {
-    showToast('Generate a resume first!');
-    return;
+// Global Resume State for Live Render
+let activeResumeData = null;
+
+function renderLiveResumePreview(customData) {
+  const container = document.getElementById('pdf-export-container');
+  const formatChoice = document.getElementById('resume-format-choice')?.value || 'ats-clean';
+
+  if (!container) return;
+
+  const data = customData || activeResumeData || {
+    name: profile.name || 'Alex Vance',
+    contact: profile.contact || 'alex.vance@example.com | (555) 019-2831',
+    linkedin: profile.linkedin || 'https://linkedin.com/in/alexvance-dev',
+    portfolio: profile.portfolio || 'https://github.com/alexvance-code',
+    summary: profile.summary || 'Full-stack software engineer with 5+ years building scalable web applications and cloud microservices.',
+    skills: {
+      languages: 'JavaScript, TypeScript, Python, HTML5/CSS3, SQL',
+      frameworks: 'React, Next.js, Node.js, Express, Tailwind CSS, REST APIs',
+      tools: 'Git, Docker, AWS, PostgreSQL, Vercel, Jest, CI/CD'
+    },
+    experience: [
+      {
+        role: 'Senior Full Stack Software Engineer',
+        company: 'TechScale Solutions',
+        location: 'San Francisco, CA',
+        period: '2023 – Present',
+        bullets: [
+          'Engineered responsive web applications and REST APIs serving 500k+ monthly active users.',
+          'Reduced core application render latency by 40% with client state optimization and code splitting.',
+          'Mentored junior engineers and led agile cross-functional sprint reviews.'
+        ]
+      }
+    ]
+  };
+
+  if (formatChoice === 'ats-clean') {
+    container.className = 'w-full max-w-[595px] bg-white text-slate-900 p-8 rounded shadow-2xl space-y-3 font-sans text-left transition-all leading-tight';
+    container.innerHTML = `
+      <div class="border-b border-slate-900 pb-2 text-center">
+        <h1 class="text-2xl font-bold uppercase tracking-wider text-slate-900">${escapeHTML(data.name)}</h1>
+        <p class="text-xs text-slate-700 mt-1">${escapeHTML(data.contact)} | ${escapeHTML(data.linkedin)} | ${escapeHTML(data.portfolio)}</p>
+      </div>
+
+      <div class="space-y-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Professional Summary</h2>
+        <p class="text-xs text-slate-800 leading-snug">${escapeHTML(data.summary)}</p>
+      </div>
+
+      <div class="space-y-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Technical Skills</h2>
+        <div class="text-xs text-slate-800 space-y-0.5">
+          <p><strong>Languages:</strong> ${escapeHTML(data.skills.languages)}</p>
+          <p><strong>Frameworks:</strong> ${escapeHTML(data.skills.frameworks)}</p>
+          <p><strong>Tools & Infrastructure:</strong> ${escapeHTML(data.skills.tools)}</p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Work Experience</h2>
+        ${data.experience.map(exp => `
+          <div class="space-y-0.5">
+            <div class="flex justify-between items-baseline text-xs font-bold text-slate-900">
+              <span>${escapeHTML(exp.role)} – ${escapeHTML(exp.company)}</span>
+              <span class="text-slate-600 font-normal">${escapeHTML(exp.period)}</span>
+            </div>
+            <ul class="list-disc list-inside text-xs text-slate-800 space-y-0.5 pl-1">
+              ${exp.bullets.map(b => `<li>${escapeHTML(b)}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="space-y-1 pt-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Education</h2>
+        <div class="flex justify-between text-xs text-slate-900 font-semibold">
+          <span>B.S. in Computer Science</span>
+          <span class="font-normal text-slate-600">Honors Graduate</span>
+        </div>
+      </div>
+    `;
+  } else if (formatChoice === 'modern-tech') {
+    container.className = 'w-full max-w-[595px] bg-white text-slate-900 p-8 rounded shadow-2xl space-y-4 font-sans text-left transition-all leading-normal';
+    container.innerHTML = `
+      <div class="flex justify-between items-start border-b-2 border-indigo-600 pb-3">
+        <div>
+          <h1 class="text-2xl font-extrabold text-indigo-950">${escapeHTML(data.name)}</h1>
+          <p class="text-xs font-semibold text-indigo-600 mt-0.5">Full Stack Software Engineer</p>
+        </div>
+        <div class="text-right text-[11px] text-slate-600 space-y-0.5">
+          <p>${escapeHTML(data.contact)}</p>
+          <p>${escapeHTML(data.linkedin)}</p>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Executive Overview</h2>
+        <p class="text-xs text-slate-700 leading-relaxed">${escapeHTML(data.summary)}</p>
+      </div>
+
+      <div>
+        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Skills & Core Stack</h2>
+        <p class="text-xs text-slate-800"><strong>Tech Stack:</strong> ${escapeHTML(data.skills.languages)}, ${escapeHTML(data.skills.frameworks)}</p>
+      </div>
+
+      <div class="space-y-2">
+        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Selected Experience</h2>
+        ${data.experience.map(exp => `
+          <div>
+            <div class="flex justify-between text-xs font-bold text-slate-900">
+              <span>${escapeHTML(exp.role)} @ ${escapeHTML(exp.company)}</span>
+              <span class="text-indigo-600">${escapeHTML(exp.period)}</span>
+            </div>
+            <ul class="list-disc list-inside text-xs text-slate-700 mt-1 space-y-0.5">
+              ${exp.bullets.map(b => `<li>${escapeHTML(b)}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else {
+    // Default Fallback
+    renderLiveResumePreview();
   }
-
-  // Create temporary dynamic form for Overleaf API POST
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = 'https://www.overleaf.com/docs';
-  form.target = '_blank';
-
-  const snipInput = document.createElement('input');
-  snipInput.type = 'hidden';
-  snipInput.name = 'snip';
-  snipInput.value = code;
-
-  const engineInput = document.createElement('input');
-  engineInput.type = 'hidden';
-  engineInput.name = 'engine';
-  engineInput.value = 'pdflatex';
-
-  form.appendChild(snipInput);
-  form.appendChild(engineInput);
-
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
-
-  showToast('Opening project in Overleaf...');
 }
 
 async function generateTailoredResume() {
-  const formatChoice = document.getElementById('resume-format-choice')?.value || 'overleaf-jake';
-  const jdText = document.getElementById('resume-jd-text')?.value.trim() || 'Software Engineer / Full Stack Developer requirements';
-  const urlInput = document.getElementById('resume-job-url')?.value.trim() || '';
-  const outputCodeArea = document.getElementById('resume-output-code');
+  const formatChoice = document.getElementById('resume-format-choice')?.value || 'ats-clean';
+  const jdText = document.getElementById('resume-jd-text')?.value.trim() || 'Software Engineer requirements';
   const btnGen = document.getElementById('btn-generate-resume');
 
-  if (!outputCodeArea) return;
-
   const originalBtn = btnGen.innerHTML;
-  btnGen.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Tailoring Resume Code...`;
+  btnGen.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Tailoring Resume...`;
   btnGen.disabled = true;
 
   const geminiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
   const groqKey = profile.groqApiKey ? profile.groqApiKey.trim() : '';
 
-  const systemPrompt = `You are a world-class resume architect and LaTeX expert. Generate a high-converting, tailored resume for ${profile.name} specifically customized for the following job posting:\n\nJob Description / Link: ${urlInput}\nRequirements:\n${jdText}\n\nCandidate Profile:\nName: ${profile.name}\nContact: ${profile.contact}\nLinkedIn: ${profile.linkedin}\nPortfolio: ${profile.portfolio}\nSummary: ${profile.summary}\nPitch: ${profile.pitch}\n\nFormat Requested: ${formatChoice}.\n\nInstructions:\n- If requested format is 'overleaf-jake' or 'overleaf-modern', output 100% VALID, COMPILABLE LaTeX code starting with \\documentclass and ending with \\end{document}. Include sections: Summary, Technical Skills (Languages, Frameworks, Tools), Work Experience (bullet points tailored with metric-driven achievements & keywords matching the JD), Projects, and Education. Do NOT include markdown wrapping or intro text, just raw LaTeX code.\n- If requested format is 'ats-markdown', generate clean Markdown resume with headers.\n- If requested format is 'html-printable', generate self-contained HTML/CSS printable template code.`;
+  const systemPrompt = `You are a professional resume writer. Tailor this candidate profile for the job description provided below into JSON format.\n\nJob Description:\n${jdText}\n\nCandidate Profile:\nName: ${profile.name}\nContact: ${profile.contact}\nLinkedIn: ${profile.linkedin}\nPortfolio: ${profile.portfolio}\nSummary: ${profile.summary}\n\nOutput MUST be valid raw JSON with keys: "summary" (string), "skills" (object with languages, frameworks, tools), "bullets" (array of 3 tailored achievement bullet points). Do not wrap in markdown.`;
 
-  let generatedResult = '';
+  try {
+    let jsonStr = '';
 
-  // 1. Try Groq AI first if key exists (Lightning fast)
-  if (groqKey) {
-    try {
+    if (groqKey) {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: systemPrompt }] })
       });
-
       const data = await res.json();
       if (res.ok && data.choices && data.choices[0]) {
-        generatedResult = data.choices[0].message.content;
+        jsonStr = data.choices[0].message.content;
       }
-    } catch (e) {}
-  }
-
-  // 2. Try Gemini AI if result empty
-  if (!generatedResult && geminiKey) {
-    try {
+    } else if (geminiKey) {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -683,155 +764,78 @@ async function generateTailoredResume() {
       });
       const data = await res.json();
       if (data.candidates && data.candidates[0]) {
-        generatedResult = data.candidates[0].content.parts[0].text;
+        jsonStr = data.candidates[0].content.parts[0].text;
       }
-    } catch (e) {}
-  }
-
-  // 3. Fallback Local Template Generator (Jake's LaTeX)
-  if (!generatedResult) {
-    if (formatChoice.includes('overleaf')) {
-      generatedResult = getLocalJakeLaTeXResume();
-    } else {
-      generatedResult = getLocalATSMarkdownResume();
     }
-  }
 
-  // Clean markdown backticks if returned inside codeblock
-  if (generatedResult.startsWith('```latex') || generatedResult.startsWith('```tex') || generatedResult.startsWith('```html') || generatedResult.startsWith('```markdown')) {
-    generatedResult = generatedResult.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
-  }
+    if (jsonStr) {
+      jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(jsonStr);
 
-  outputCodeArea.value = generatedResult;
-  showToast('Generated tailored resume! Click Copy Code or 1-Click Open in Overleaf.');
+      activeResumeData = {
+        name: profile.name,
+        contact: profile.contact,
+        linkedin: profile.linkedin,
+        portfolio: profile.portfolio,
+        summary: parsed.summary || profile.summary,
+        skills: {
+          languages: parsed.skills?.languages || 'JavaScript, TypeScript, Python, HTML/CSS',
+          frameworks: parsed.skills?.frameworks || 'React, Next.js, Node.js, Express, TailwindCSS',
+          tools: parsed.skills?.tools || 'Git, Docker, AWS, PostgreSQL, Vercel'
+        },
+        experience: [
+          {
+            role: 'Senior Software Engineer',
+            company: 'TechScale Solutions',
+            location: 'San Francisco, CA',
+            period: '2023 – Present',
+            bullets: parsed.bullets || [
+              'Engineered responsive web applications and REST APIs serving 500k+ users.',
+              'Reduced render latency by 40% using modern state management.',
+              'Collaborated in agile cross-functional teams to accelerate release velocity.'
+            ]
+          }
+        ]
+      };
+
+      renderLiveResumePreview(activeResumeData);
+      showToast('Generated AI Tailored Resume! Click Download PDF.');
+    } else {
+      renderLiveResumePreview();
+      showToast('Rendered tailored resume template! Click Download PDF.');
+    }
+  } catch (e) {
+    renderLiveResumePreview();
+    showToast('Rendered resume template! Click Download PDF.');
+  }
 
   btnGen.innerHTML = originalBtn;
   btnGen.disabled = false;
 }
 
-function getLocalJakeLaTeXResume() {
-  return `%-------------------------
-% Tailored Resume - Jake's Resume LaTeX Template
-% Compatible with Overleaf.com
-%-------------------------
+function downloadResumePDF() {
+  const element = document.getElementById('pdf-export-container');
+  if (!element) return;
 
-\\documentclass[letterpaper,11pt]{article}
+  showToast('Generating PDF...');
 
-\\usepackage{latexsym}
-\\usepackage[empty]{fullpage}
-\\usepackage{titlesec}
-\\usepackage{marvosym}
-\\usepackage[usenames,dvipsnames]{color}
-\\usepackage{verbatim}
-\\usepackage{enumitem}
-\\usepackage[hidelinks]{hyperref}
-\\usepackage{fancyhdr}
-\\usepackage[english]{babel}
-\\usepackage{tabularx}
+  const opt = {
+    margin:       [0.4, 0.4, 0.4, 0.4],
+    filename:     `${(profile.name || 'Resume').replace(/\s+/g, '_')}_Tailored_Resume.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
 
-\\pagestyle{fancy}
-\\fancyhf{}
-\\fancyfoot{}
-\\renewcommand{\\headrulewidth}{0pt}
-\\renewcommand{\\footrulewidth}{0pt}
-
-\\addtolength{\\oddsidemargin}{-0.5in}
-\\addtolength{\\evensidemargin}{-0.5in}
-\\addtolength{\\textwidth}{1in}
-\\addtolength{\\topmargin}{-.5in}
-\\addtolength{\\textheight}{1.0in}
-
-\\urlstyle{same}
-
-\\raggedbottom
-\\raggedright
-\\setlength{\\tabcolsep}{0in}
-
-% Sections formatting
-\\titleformat{\\section}{
-  \\vspace{-4pt}\\scshape\\raggedright\\large
-}{}{0em}{}[\\color{black}\\vspace{-6pt}\\rule{\\textwidth}{0.4pt}]
-
-\\begin{document}
-
-%----------HEADING----------
-\\begin{center}
-    {\\Huge \\scshape ${profile.name || 'Alex Vance'}} \\\\ \\vspace{1pt}
-    \\small ${profile.contact || 'alex.vance@example.com | (555) 019-2831'} $|$ 
-    \\href{${profile.linkedin || 'https://linkedin.com'}}{\\underline{LinkedIn}} $|$
-    \\href{${profile.portfolio || 'https://github.com'}}{\\underline{Portfolio}}
-\\end{center}
-
-%-----------PROFESSIONAL SUMMARY-----------
-\\section{Summary}
-\\small{${profile.summary || 'Full-stack software engineer with 5+ years of experience building high-performance web applications and cloud architectures.'}}
-
-%-----------TECHNICAL SKILLS-----------
-\\section{Technical Skills}
- \\begin{itemize}[leftmargin=0.15in, label={}]
-    \\small{\\item{
-     \\textbf{Languages}{: JavaScript, TypeScript, Python, HTML/CSS, SQL} \\\\
-     \\textbf{Frameworks}{: React, Next.js, Node.js, Express, TailwindCSS, REST APIs} \\\\
-     \\textbf{Developer Tools}{: Git, Docker, AWS, Vercel, PostgreSQL, Jest, CI/CD Pipelines}
-    }}
- \\end{itemize}
-
-%-----------EXPERIENCE-----------
-\\section{Experience}
-  \\begin{itemize}[leftmargin=0.15in, label={}]
-    \\item
-      \\begin{tabularx}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
-        \\textbf{Senior Full Stack Software Engineer} & 2023 -- Present \\\\
-        \\textit{TechScale Solutions} & \\textit{San Francisco, CA} \\\\
-      \\end{tabularx}\\vspace{-5pt}
-      \\begin{itemize}
-        \\item Engineered high-performance microservices and responsive web UI components, reducing page load times by 40\\%.
-        \\item Architected cloud REST APIs serving over 500k monthly active users with 99.99\\% uptime SLA.
-        \\item Collaborated in agile cross-functional engineering teams to accelerate product delivery velocity.
-      \\end{itemize}
-  \\end{itemize}
-
-%-----------PROJECTS-----------
-\\section{Key Projects}
-  \\begin{itemize}[leftmargin=0.15in, label={}]
-    \\item
-      \\textbf{CareerFlow AI Tracker} $|$ \\emph{React, Node.js, Gemini API, TailwindCSS} \\\\
-      Built an end-to-end intelligent job search assistant with Kanban tracking and AI resume generator.
-  \\end{itemize}
-
-%-----------EDUCATION-----------
-\\section{Education}
-  \\begin{itemize}[leftmargin=0.15in, label={}]
-    \\item
-      \\begin{tabularx}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
-        \\textbf{B.S. in Computer Science} & 2018 -- 2022 \\\\
-        \\textit{State University} & \\textit{Honors Graduate} \\\\
-      \\end{tabularx}
-  \\end{itemize}
-
-\\end{document}`;
-}
-
-function getLocalATSMarkdownResume() {
-  return `# ${profile.name || 'Alex Vance'}
-${profile.contact || 'alex.vance@example.com | (555) 019-2831'} | LinkedIn: ${profile.linkedin} | Portfolio: ${profile.portfolio}
-
-## PROFESSIONAL SUMMARY
-${profile.summary || 'Full-stack software engineer with 5+ years of experience building high-performance web applications.'}
-
-## TECHNICAL SKILLS
-- **Languages**: JavaScript, TypeScript, Python, HTML5, CSS3, SQL
-- **Frameworks & Libraries**: React, Next.js, Node.js, Express, Tailwind CSS, REST APIs
-- **Tools & Platforms**: Git, Docker, AWS, PostgreSQL, Vercel, Jest, CI/CD
-
-## WORK EXPERIENCE
-### Senior Software Engineer | TechScale Solutions (2023 - Present)
-- Architected resilient web applications and REST microservices serving 500k+ monthly users.
-- Reduced core user interface latency by 40% using modern state management and code splitting.
-- Led cross-functional sprint planning and mentored junior software engineers.
-
-## EDUCATION
-- **B.S. in Computer Science** - State University (2018 - 2022)`;
+  if (window.html2pdf) {
+    html2pdf().set(opt).from(element).save().then(() => {
+      showToast('PDF Resume downloaded!');
+    }).catch(() => {
+      window.print();
+    });
+  } else {
+    window.print();
+  }
 }
 
 function copySnippet(elementId, label) {
