@@ -1,4 +1,4 @@
-/* CareerFlow AI - Multi-Engine AI Integration (Google Gemini + Groq Llama 3.3 70B) */
+/* CareerFlow AI - Multi-Engine AI Integration + AI Resume & Overleaf Studio Engine */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -581,7 +581,226 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & DUAL-ENGINE AI (GEMINI + GROQ LLAMA 3.3)
+// 4. APPLY FASTER HUB & AI RESUME / OVERLEAF TAILORING STUDIO
+function extractJobFromURL() {
+  const urlInput = document.getElementById('resume-job-url')?.value.trim();
+  if (!urlInput) {
+    showToast('Paste a valid job URL first');
+    return;
+  }
+
+  showToast('Extracting job title and company from link...');
+  
+  // Extract company/domain heuristics from URL
+  try {
+    const parsed = new URL(urlInput);
+    const domainParts = parsed.hostname.replace('www.', '').split('.');
+    const companyGuess = domainParts[0].charAt(0).toUpperCase() + domainParts[0].slice(1);
+    
+    document.getElementById('ai-company').value = companyGuess;
+    showToast(`Detected ${companyGuess} from link!`);
+  } catch (e) {
+    showToast('Invalid URL format');
+  }
+}
+
+async function generateTailoredResume() {
+  const formatChoice = document.getElementById('resume-format-choice')?.value || 'overleaf-jake';
+  const jdText = document.getElementById('resume-jd-text')?.value.trim() || 'Software Engineer / Full Stack Developer requirements';
+  const urlInput = document.getElementById('resume-job-url')?.value.trim() || '';
+  const outputCodeArea = document.getElementById('resume-output-code');
+  const btnGen = document.getElementById('btn-generate-resume');
+
+  if (!outputCodeArea) return;
+
+  const originalBtn = btnGen.innerHTML;
+  btnGen.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Tailoring Resume Code...`;
+  btnGen.disabled = true;
+
+  const geminiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
+  const groqKey = profile.groqApiKey ? profile.groqApiKey.trim() : '';
+
+  const systemPrompt = `You are a world-class resume architect and LaTeX expert. Generate a high-converting, tailored resume for ${profile.name} specifically customized for the following job posting:\n\nJob Description / Link: ${urlInput}\nRequirements:\n${jdText}\n\nCandidate Profile:\nName: ${profile.name}\nContact: ${profile.contact}\nLinkedIn: ${profile.linkedin}\nPortfolio: ${profile.portfolio}\nSummary: ${profile.summary}\nPitch: ${profile.pitch}\n\nFormat Requested: ${formatChoice}.\n\nInstructions:\n- If requested format is 'overleaf-jake' or 'overleaf-modern', output 100% VALID, COMPILABLE LaTeX code starting with \\documentclass and ending with \\end{document}. Include sections: Summary, Technical Skills (Languages, Frameworks, Tools), Work Experience (bullet points tailored with metric-driven achievements & keywords matching the JD), Projects, and Education. Do NOT include markdown wrapping or intro text, just raw LaTeX code.\n- If requested format is 'ats-markdown', generate clean Markdown resume with headers.\n- If requested format is 'html-printable', generate self-contained HTML/CSS printable template code.`;
+
+  let generatedResult = '';
+
+  // 1. Try Groq AI first if key exists (Lightning fast)
+  if (groqKey) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: systemPrompt }] })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.choices && data.choices[0]) {
+        generatedResult = data.choices[0].message.content;
+      }
+    } catch (e) {}
+  }
+
+  // 2. Try Gemini AI if result empty
+  if (!generatedResult && geminiKey) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+      });
+      const data = await res.json();
+      if (data.candidates && data.candidates[0]) {
+        generatedResult = data.candidates[0].content.parts[0].text;
+      }
+    } catch (e) {}
+  }
+
+  // 3. Fallback Local Template Generator (Jake's LaTeX)
+  if (!generatedResult) {
+    if (formatChoice.includes('overleaf')) {
+      generatedResult = getLocalJakeLaTeXResume();
+    } else {
+      generatedResult = getLocalATSMarkdownResume();
+    }
+  }
+
+  // Clean markdown backticks if returned inside codeblock
+  if (generatedResult.startsWith('```latex') || generatedResult.startsWith('```tex') || generatedResult.startsWith('```html') || generatedResult.startsWith('```markdown')) {
+    generatedResult = generatedResult.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
+  }
+
+  outputCodeArea.value = generatedResult;
+  showToast('Generated tailored resume! Click Copy Code or Open Overleaf.');
+
+  btnGen.innerHTML = originalBtn;
+  btnGen.disabled = false;
+}
+
+function getLocalJakeLaTeXResume() {
+  return `%-------------------------
+% Tailored Resume - Jake's Resume LaTeX Template
+% Compatible with Overleaf.com
+%-------------------------
+
+\\documentclass[letterpaper,11pt]{article}
+
+\\usepackage{latexsym}
+\\usepackage[empty]{fullpage}
+\\usepackage{titlesec}
+\\usepackage{marvosym}
+\\usepackage[usenames,dvipsnames]{color}
+\\usepackage{verbatim}
+\\usepackage{enumitem}
+\\usepackage[hidelinks]{hyperref}
+\\usepackage{fancyhdr}
+\\usepackage[english]{babel}
+\\usepackage{tabularx}
+
+\\pagestyle{fancy}
+\\fancyhf{}
+\\fancyfoot{}
+\\renewcommand{\\headrulewidth}{0pt}
+\\renewcommand{\\footrulewidth}{0pt}
+
+\\addtolength{\\oddsidemargin}{-0.5in}
+\\addtolength{\\evensidemargin}{-0.5in}
+\\addtolength{\\textwidth}{1in}
+\\addtolength{\\topmargin}{-.5in}
+\\addtolength{\\textheight}{1.0in}
+
+\\urlstyle{same}
+
+\\raggedbottom
+\\raggedright
+\\setlength{\\tabcolsep}{0in}
+
+% Sections formatting
+\\titleformat{\\section}{
+  \\vspace{-4pt}\\scshape\\raggedright\\large
+}{}{0em}{}[\\color{black}\\vspace{-6pt}\\rule{\\textwidth}{0.4pt}]
+
+\\begin{document}
+
+%----------HEADING----------
+\\begin{center}
+    {\\Huge \\scshape ${profile.name || 'Alex Vance'}} \\\\ \\vspace{1pt}
+    \\small ${profile.contact || 'alex.vance@example.com | (555) 019-2831'} $|$ 
+    \\href{${profile.linkedin || 'https://linkedin.com'}}{\\underline{LinkedIn}} $|$
+    \\href{${profile.portfolio || 'https://github.com'}}{\\underline{Portfolio}}
+\\end{center}
+
+%-----------PROFESSIONAL SUMMARY-----------
+\\section{Summary}
+\\small{${profile.summary || 'Full-stack software engineer with 5+ years of experience building high-performance web applications and cloud architectures.'}}
+
+%-----------TECHNICAL SKILLS-----------
+\\section{Technical Skills}
+ \\begin{itemize}[leftmargin=0.15in, label={}]
+    \\small{\\item{
+     \\textbf{Languages}{: JavaScript, TypeScript, Python, HTML/CSS, SQL} \\\\
+     \\textbf{Frameworks}{: React, Next.js, Node.js, Express, TailwindCSS, REST APIs} \\\\
+     \\textbf{Developer Tools}{: Git, Docker, AWS, Vercel, PostgreSQL, Jest, CI/CD Pipelines}
+    }}
+ \\end{itemize}
+
+%-----------EXPERIENCE-----------
+\\section{Experience}
+  \\begin{itemize}[leftmargin=0.15in, label={}]
+    \\item
+      \\begin{tabularx}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
+        \\textbf{Senior Full Stack Software Engineer} & 2023 -- Present \\\\
+        \\textit{TechScale Solutions} & \\textit{San Francisco, CA} \\\\
+      \\end{tabularx}\\vspace{-5pt}
+      \\begin{itemize}
+        \\item Engineered high-performance microservices and responsive web UI components, reducing page load times by 40\\%.
+        \\item Architected cloud REST APIs serving over 500k monthly active users with 99.99\\% uptime SLA.
+        \\item Collaborated in agile cross-functional engineering teams to accelerate product delivery velocity.
+      \\end{itemize}
+  \\end{itemize}
+
+%-----------PROJECTS-----------
+\\section{Key Projects}
+  \\begin{itemize}[leftmargin=0.15in, label={}]
+    \\item
+      \\textbf{CareerFlow AI Tracker} $|$ \\emph{React, Node.js, Gemini API, TailwindCSS} \\\\
+      Built an end-to-end intelligent job search assistant with Kanban tracking and AI resume generator.
+  \\end{itemize}
+
+%-----------EDUCATION-----------
+\\section{Education}
+  \\begin{itemize}[leftmargin=0.15in, label={}]
+    \\item
+      \\begin{tabularx}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
+        \\textbf{B.S. in Computer Science} & 2018 -- 2022 \\\\
+        \\textit{State University} & \\textit{Honors Graduate} \\\\
+      \\end{tabularx}
+  \\end{itemize}
+
+\\end{document}`;
+}
+
+function getLocalATSMarkdownResume() {
+  return `# ${profile.name || 'Alex Vance'}
+${profile.contact || 'alex.vance@example.com | (555) 019-2831'} | LinkedIn: ${profile.linkedin} | Portfolio: ${profile.portfolio}
+
+## PROFESSIONAL SUMMARY
+${profile.summary || 'Full-stack software engineer with 5+ years of experience building high-performance web applications.'}
+
+## TECHNICAL SKILLS
+- **Languages**: JavaScript, TypeScript, Python, HTML5, CSS3, SQL
+- **Frameworks & Libraries**: React, Next.js, Node.js, Express, Tailwind CSS, REST APIs
+- **Tools & Platforms**: Git, Docker, AWS, PostgreSQL, Vercel, Jest, CI/CD
+
+## WORK EXPERIENCE
+### Senior Software Engineer | TechScale Solutions (2023 - Present)
+- Architected resilient web applications and REST microservices serving 500k+ monthly users.
+- Reduced core user interface latency by 40% using modern state management and code splitting.
+- Led cross-functional sprint planning and mentored junior software engineers.
+
+## EDUCATION
+- **B.S. in Computer Science** - State University (2018 - 2022)`;
+}
+
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -702,7 +921,7 @@ async function generateAIText(type) {
     ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
     : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
 
-  // 1. GROQ AI GENERATION (High Free Limits)
+  // 1. GROQ AI GENERATION
   if (engineChoice === 'groq' || (!geminiKey && groqKey)) {
     if (!groqKey) {
       fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
@@ -735,7 +954,7 @@ async function generateAIText(type) {
         const data = await res.json();
         if (res.ok && data.choices && data.choices[0]) {
           outputText.textContent = data.choices[0].message.content;
-          showToast(`Generated using Groq AI (${m}) at 500+ tokens/sec!`);
+          showToast(`Generated using Groq AI (${m})!`);
           groqSuccess = true;
           break;
         }
@@ -789,7 +1008,7 @@ async function generateAIText(type) {
             success = true;
             break;
           } else if (data.error && (data.error.message.includes('Quota exceeded') || data.error.status === 'RESOURCE_EXHAUSTED')) {
-            break; // Skip version and try next model
+            break;
           }
         } catch (err) {}
       }
@@ -798,7 +1017,6 @@ async function generateAIText(type) {
     }
 
     if (!success) {
-      // If Groq key is present, auto fallback to Groq AI
       if (groqKey) {
         showToast('Gemini quota full. Switching to Groq Llama 3 AI!');
         generateAITextWithEngine('groq', type, company, position, jd, tone, outputTitle, outputText, systemPrompt, originalText, activeBtn);
@@ -1043,6 +1261,8 @@ function openJobDetailModal(jobId) {
     document.getElementById('ai-company').value = job.company;
     document.getElementById('ai-position').value = job.position;
     document.getElementById('ai-jd').value = job.notes;
+    document.getElementById('resume-jd-text').value = job.notes;
+    document.getElementById('resume-job-url').value = job.url || '';
     generateAIText('cover-letter');
   };
 

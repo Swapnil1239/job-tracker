@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CareerFlow AI - Job Application Tracker & Apply Assistant</title>
+  <title>CareerFlow AI - Job Application Tracker & Resume Studio</title>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.0.8">
+  <link rel="stylesheet" href="styles.css?v=1.0.9">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -53,10 +53,10 @@
         <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
           <span>CareerFlow</span>
           <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-            <i class="fa-solid fa-sparkles text-[10px] text-pink-400"></i> Gemini & Groq Llama 3 AI
+            <i class="fa-solid fa-sparkles text-[10px] text-pink-400"></i> AI Resume Studio & Overleaf
           </span>
         </h1>
-        <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Track Job Applications</p>
+        <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Tailor Resumes for Job Links</p>
       </div>
     </div>
 
@@ -113,7 +113,7 @@
 
       <button onclick="switchTab('faster')" id="tab-faster" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all">
         <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
-        <span>Apply Faster Hub</span>
+        <span>Apply Faster Hub & AI Resumes</span>
       </button>
     </nav>
 
@@ -363,7 +363,7 @@
       </div>
     </section>
 
-    <!-- 4. APPLY FASTER HUB -->
+    <!-- 4. APPLY FASTER HUB & AI RESUME STUDIO -->
     <section id="view-faster" class="view-section space-y-6 hidden">
       <!-- Hub Header Banner -->
       <div class="glass-panel p-6 rounded-2xl border border-indigo-500/30 relative overflow-hidden">
@@ -375,11 +375,11 @@
             </div>
             <div>
               <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <span>Apply Faster Suite</span>
-                <span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-semibold">Gemini + Groq Llama 3.3 AI</span>
+                <span>Apply Faster Suite & AI Resume Studio</span>
+                <span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-semibold">Overleaf + Gemini + Groq</span>
               </h2>
               <p class="text-xs text-slate-300 mt-1 max-w-2xl">
-                Speed through job applications! Use 1-click clipboard snippets, auto-generate customized cover letters powered by Google Gemini or Groq Llama 3 AI, write cold recruiter outreach emails, and match requirements.
+                Paste a Job Link or Job Description to generate tailored cover letters and formatted Overleaf / LaTeX resumes!
               </p>
             </div>
           </div>
@@ -392,6 +392,69 @@
         </div>
       </div>
 
+      <!-- NEW: AI RESUME TAILORING & OVERLEAF STUDIO -->
+      <div class="glass-card p-6 rounded-2xl border border-indigo-500/30 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
+          <div>
+            <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-file-code text-indigo-400"></i> AI Tailored Resume Studio (Overleaf & LaTeX Format)
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Paste a job posting URL or job description to generate custom Overleaf / LaTeX code or ATS markdown!</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Format:</span>
+            <select id="resume-format-choice" class="bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-indigo-300 px-3 py-1.5 focus:outline-none">
+              <option value="overleaf-jake">Overleaf / LaTeX (Jake's Clean Standard)</option>
+              <option value="overleaf-modern">Overleaf / LaTeX (Modern Executive)</option>
+              <option value="ats-markdown">ATS-Optimized Markdown</option>
+              <option value="html-printable">Printable HTML / PDF Template</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 text-xs">
+          <!-- Job URL & Info Input -->
+          <div class="lg:col-span-6 space-y-3">
+            <label class="block text-slate-300 font-bold">Job Posting Link (URL) or Target Company</label>
+            <div class="flex gap-2">
+              <input type="text" id="resume-job-url" placeholder="https://linkedin.com/jobs/view/..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+              <button onclick="extractJobFromURL()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-400 font-bold flex items-center gap-1 transition">
+                <i class="fa-solid fa-link"></i> Auto-Fill
+              </button>
+            </div>
+
+            <label class="block text-slate-300 font-bold mt-2">Paste Job Description / Key Requirements</label>
+            <textarea id="resume-jd-text" rows="5" placeholder="Paste full job description or key technical requirements here..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+
+            <button id="btn-generate-resume" onclick="generateTailoredResume()" class="glow-btn w-full py-2.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 text-xs shadow-lg">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Tailored Resume
+            </button>
+          </div>
+
+          <!-- Resume Preview / Overleaf Code Area -->
+          <div class="lg:col-span-6 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-code text-indigo-400"></i> Formatted Resume Code / Output
+              </span>
+
+              <div class="flex items-center gap-2">
+                <button onclick="copyToClipboard(document.getElementById('resume-output-code').value, 'Resume Code')" class="text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1">
+                  <i class="fa-regular fa-copy"></i> Copy Code
+                </button>
+                <a id="btn-open-overleaf" href="https://www.overleaf.com/docs" target="_blank" class="text-xs text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 px-2.5 py-1 rounded-lg border border-emerald-500/30 flex items-center gap-1 font-bold">
+                  <i class="fa-solid fa-external-link"></i> Open Overleaf
+                </a>
+              </div>
+            </div>
+
+            <textarea id="resume-output-code" readonly rows="11" placeholder="Click 'Generate AI Tailored Resume' to see formatted Overleaf / LaTeX code or ATS markdown..." class="w-full bg-slate-950 p-3.5 rounded-xl text-slate-300 font-mono text-[11px] border border-slate-800 leading-relaxed select-all"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Snippets & Generator Row -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Left Column: Master Profile 1-Click Copy Snippets -->
         <div class="lg:col-span-5 space-y-4">
@@ -694,7 +757,7 @@
 
         <div class="flex items-center gap-2">
           <button id="btn-ai-generate-job" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30 transition flex items-center gap-1">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Cover Letter for this
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Resume & Cover Letter
           </button>
 
           <button id="btn-edit-job" class="glow-btn px-4 py-2 rounded-xl text-xs font-bold text-white">
@@ -727,7 +790,7 @@
               <i class="fa-solid fa-key text-pink-400"></i> Google Gemini API Key
             </label>
             <div class="flex items-center gap-3">
-              <button type="button" onclick="testGeminiApiKey()" class="text-[11px] text-purple-300 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 px-2.5 py-0.5 rounded font-bold transition flex items-center gap-1">
+              <button type="button" onclick="testGeminiApiKey()" class="text-[11px] text-purple-300 bg-purple-500/20 hover:bg-purple-500/20 border border-purple-500/30 px-2.5 py-0.5 rounded font-bold transition flex items-center gap-1">
                 <i class="fa-solid fa-vial"></i> Test Key
               </button>
               <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
@@ -839,7 +902,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.0.8 -->
-  <script src="app.js?v=1.0.8"></script>
+  <!-- App Main JavaScript with Cache Busting v1.0.9 -->
+  <script src="app.js?v=1.0.9"></script>
 </body>
 </html>
