@@ -38,7 +38,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.0.9">
+  <link rel="stylesheet" href="styles.css?v=1.1.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -392,7 +392,7 @@
         </div>
       </div>
 
-      <!-- NEW: AI RESUME TAILORING & OVERLEAF STUDIO -->
+      <!-- AI RESUME TAILORING & OVERLEAF STUDIO -->
       <div class="glass-card p-6 rounded-2xl border border-indigo-500/30 space-y-5">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
           <div>
@@ -443,9 +443,9 @@
                 <button onclick="copyToClipboard(document.getElementById('resume-output-code').value, 'Resume Code')" class="text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1">
                   <i class="fa-regular fa-copy"></i> Copy Code
                 </button>
-                <a id="btn-open-overleaf" href="https://www.overleaf.com/docs" target="_blank" class="text-xs text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 px-2.5 py-1 rounded-lg border border-emerald-500/30 flex items-center gap-1 font-bold">
-                  <i class="fa-solid fa-external-link"></i> Open Overleaf
-                </a>
+                <button onclick="openInOverleafDirect()" class="text-xs text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 px-2.5 py-1 rounded-lg border border-emerald-500/30 flex items-center gap-1 font-bold">
+                  <i class="fa-solid fa-external-link"></i> 1-Click Open in Overleaf
+                </button>
               </div>
             </div>
 
@@ -902,7 +902,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.0.9 -->
-  <script src="app.js?v=1.0.9"></script>
+  <!-- App Main JavaScript with Cache Busting v1.1.0 -->
+  <script src="app.js?v=1.1.0"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* CareerFlow AI - Multi-Engine AI Integration + AI Resume & Overleaf Studio Engine */
+/* CareerFlow AI - Multi-Engine AI Integration + AI Resume Studio with Overleaf Official API Integration */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -591,7 +591,6 @@ function extractJobFromURL() {
 
   showToast('Extracting job title and company from link...');
   
-  // Extract company/domain heuristics from URL
   try {
     const parsed = new URL(urlInput);
     const domainParts = parsed.hostname.replace('www.', '').split('.');
@@ -602,6 +601,40 @@ function extractJobFromURL() {
   } catch (e) {
     showToast('Invalid URL format');
   }
+}
+
+// Official Overleaf Direct API POST Form Submission
+function openInOverleafDirect() {
+  const code = document.getElementById('resume-output-code')?.value.trim();
+  if (!code) {
+    showToast('Generate a resume first!');
+    return;
+  }
+
+  // Create temporary dynamic form for Overleaf API POST
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://www.overleaf.com/docs';
+  form.target = '_blank';
+
+  const snipInput = document.createElement('input');
+  snipInput.type = 'hidden';
+  snipInput.name = 'snip';
+  snipInput.value = code;
+
+  const engineInput = document.createElement('input');
+  engineInput.type = 'hidden';
+  engineInput.name = 'engine';
+  engineInput.value = 'pdflatex';
+
+  form.appendChild(snipInput);
+  form.appendChild(engineInput);
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+
+  showToast('Opening project in Overleaf...');
 }
 
 async function generateTailoredResume() {
@@ -670,7 +703,7 @@ async function generateTailoredResume() {
   }
 
   outputCodeArea.value = generatedResult;
-  showToast('Generated tailored resume! Click Copy Code or Open Overleaf.');
+  showToast('Generated tailored resume! Click Copy Code or 1-Click Open in Overleaf.');
 
   btnGen.innerHTML = originalBtn;
   btnGen.disabled = false;
