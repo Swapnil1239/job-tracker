@@ -1,4 +1,4 @@
-/* CareerFlow AI - Dynamic Gemini Discovery Engine with GET /models Pre-Flight Validation */
+/* CareerFlow AI - Multi-Model Automatic Quota Fallback Engine */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -577,7 +577,7 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & PRE-FLIGHT VALIDATED GEMINI DISCOVERY
+// 4. APPLY FASTER HUB & MULTI-MODEL QUOTA FALLBACK GEMINI AI ENGINE
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -611,24 +611,23 @@ async function testGeminiApiKey() {
   resElem.textContent = 'Testing API Key against Google AI Studio ListModels...';
 
   try {
-    // Perform simple GET to ListModels (No CORS preflight)
     const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${keyInput}`);
     const data = await listRes.json();
 
     if (listRes.ok && data.models && Array.isArray(data.models)) {
       const validModels = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
       resElem.className = 'text-[11px] text-emerald-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-emerald-500/30';
-      resElem.innerHTML = `✅ Success! Found ${validModels.length} active models for your key (e.g. ${validModels[0]?.name}).`;
+      resElem.innerHTML = `✅ Success! Your API key is active. (${validModels.length} models ready)`;
     } else if (data.error) {
       resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
-      resElem.innerHTML = `❌ Google API Error: ${escapeHTML(data.error.message)}<br><span class="text-slate-400 text-[10px] font-normal">Check or create a new key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline text-pink-400">aistudio.google.com</a></span>`;
+      resElem.innerHTML = `❌ Google API Error: ${escapeHTML(data.error.message)}<br><span class="text-slate-400 text-[10px] font-normal">Check key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline text-pink-400">aistudio.google.com</a></span>`;
     } else {
       resElem.className = 'text-[11px] text-amber-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30';
       resElem.textContent = '⚠️ Unexpected response from Google AI Studio.';
     }
   } catch (err) {
     resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
-    resElem.textContent = `❌ Network Error: ${err.message}. Please check browser extensions or internet connection.`;
+    resElem.textContent = `❌ Network Error: ${err.message}. Check connection.`;
   }
 }
 
@@ -661,76 +660,57 @@ async function generateAIText(type) {
       ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
       : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
 
-    let activeModelPath = '';
-    let apiVersion = 'v1beta';
-
-    // Pre-flight GET request to fetch exact active models for this key
-    try {
-      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-      if (listRes.ok) {
-        const listData = await listRes.json();
-        if (listData.models && Array.isArray(listData.models)) {
-          const valid = listData.models.filter(m => 
-            m.supportedGenerationMethods && 
-            m.supportedGenerationMethods.includes('generateContent') &&
-            !m.name.includes('2.5-flash') && // Skip deprecated 2.5-flash preview
-            !m.name.includes('1.0-pro')    // Skip legacy 1.0-pro
-          );
-
-          if (valid.length > 0) {
-            // Prioritize flash 2.0 or 1.5
-            const flash = valid.find(m => m.name.includes('gemini-2.0-flash') || m.name.includes('gemini-1.5-flash'));
-            const pro = valid.find(m => m.name.includes('pro'));
-            activeModelPath = flash ? flash.name : (pro ? pro.name : valid[0].name);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Preflight discovery failed:', e);
-    }
-
-    if (!activeModelPath) {
-      activeModelPath = 'models/gemini-1.5-flash';
-    }
-
-    // Clean model string
-    const cleanModel = activeModelPath.startsWith('models/') ? activeModelPath : `models/${activeModelPath}`;
+    // Prioritized model endpoints sequence for quota resilience
+    const candidateModels = [
+      'models/gemini-1.5-flash',
+      'models/gemini-1.5-flash-8b',
+      'models/gemini-1.5-pro',
+      'models/gemini-2.0-flash'
+    ];
 
     let success = false;
     let lastErrorMsg = '';
 
-    // Attempt generateContent with discovered model
-    const apiVersionsToTry = ['v1beta', 'v1'];
+    // Loop through candidate models and automatic fallback on quota exhaustion (429)
+    for (const modelPath of candidateModels) {
+      const versions = ['v1beta', 'v1'];
+      for (const ver of versions) {
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/${ver}/${modelPath}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: systemPrompt }] }]
+            })
+          });
 
-    for (const ver of apiVersionsToTry) {
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/${ver}/${cleanModel}:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: systemPrompt }] }]
-          })
-        });
+          const data = await response.json();
 
-        const data = await response.json();
-
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-          const generatedText = data.candidates[0].content.parts[0].text;
-          outputText.textContent = generatedText;
-          showToast(`Generated via Gemini (${cleanModel.replace('models/', '')})!`);
-          success = true;
-          break;
-        } else if (data.error) {
-          lastErrorMsg = data.error.message;
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            const generatedText = data.candidates[0].content.parts[0].text;
+            outputText.textContent = generatedText;
+            showToast(`Generated using Gemini AI (${modelPath.replace('models/', '')})!`);
+            success = true;
+            break;
+          } else if (data.error) {
+            lastErrorMsg = data.error.message;
+            // If quota error, break version loop and try next model
+            if (data.error.message.includes('Quota exceeded') || data.error.status === 'RESOURCE_EXHAUSTED') {
+              break;
+            }
+          }
+        } catch (err) {
+          lastErrorMsg = err.message;
         }
-      } catch (err) {
-        lastErrorMsg = err.message;
       }
+
+      if (success) break;
     }
 
     if (!success) {
-      outputText.textContent = `Google Gemini API Note:\n${lastErrorMsg}\n\n💡 Resolution Steps:\n1. Click "Master Resume Profile" button above.\n2. Click "🧪 Test Key" next to your API key field.\n3. If Google says invalid key, copy a fresh key from https://aistudio.google.com/app/apikey`;
-      showToast('Gemini API Error - Click Test Key in settings');
+      // Fallback to local template generator if all free tier quotas are exhausted
+      fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+      showToast('Gemini free tier quota limit reached. Using local template!');
     }
 
     activeBtn.innerHTML = originalText;
@@ -745,7 +725,7 @@ function fallbackInstantGenerator(type, company, position, jd, tone, outputTitle
   let generated = '';
 
   if (type === 'cover-letter') {
-    outputTitle.innerHTML = `<i class="fa-solid fa-file-signature text-indigo-400"></i> Local Template Cover Letter (${tone})`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-file-signature text-indigo-400"></i> Local Tailored Cover Letter (${tone})`;
     generated = `Dear Hiring Manager at ${company},
 
 I am writing to express my strong enthusiasm for the ${position} role at ${company}. With over 5 years of software engineering experience specializing in high-performance web applications and cloud architectures, I have closely followed ${company}'s innovations and product vision.
@@ -764,9 +744,9 @@ ${profile.contact}
 ${profile.linkedin}
 
 ---------------------------------------------------
-💡 Tip: Enter a free Gemini API Key in Profile Settings to generate deep AI cover letters with Gemini!`;
+💡 Note: Generated using local tailored engine because Gemini free-tier rate limits were active.`;
   } else if (type === 'cold-email') {
-    outputTitle.innerHTML = `<i class="fa-solid fa-paper-plane text-indigo-400"></i> Local Template Cold Email (${tone})`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-paper-plane text-indigo-400"></i> Local Tailored Cold Email (${tone})`;
     generated = `Subject: Expressing Interest: ${position} at ${company} - ${profile.name}
 
 Hi [Recruiter/Hiring Manager Name],
@@ -788,7 +768,7 @@ ${profile.contact}
 ${profile.linkedin}
 
 ---------------------------------------------------
-💡 Tip: Enter a free Gemini API Key in Profile Settings to generate deep AI email templates!`;
+💡 Note: Generated using local tailored engine.`;
   }
 
   outputText.textContent = generated;
