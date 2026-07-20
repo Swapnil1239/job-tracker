@@ -38,7 +38,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.0.5">
+  <link rel="stylesheet" href="styles.css?v=1.0.6">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -476,7 +476,7 @@
               <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                 <i class="fa-solid fa-sparkles text-pink-400"></i> Gemini AI Cover Letter & Email Writer
               </h3>
-              <span class="text-[10px] uppercase font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Gemini 1.5 Flash</span>
+              <span class="text-[10px] uppercase font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Gemini 1.5 / 2.0 Flash</span>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -720,8 +720,8 @@
               <i class="fa-solid fa-key text-pink-400"></i> Google Gemini API Key
             </label>
             <div class="flex items-center gap-3">
-              <button type="button" onclick="testGeminiApiKey()" class="text-[11px] text-purple-300 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 px-2 py-0.5 rounded transition">
-                <i class="fa-solid fa-vial mr-1"></i> Test Key
+              <button type="button" onclick="testGeminiApiKey()" class="text-[11px] text-purple-300 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 px-2.5 py-0.5 rounded font-bold transition flex items-center gap-1">
+                <i class="fa-solid fa-vial"></i> Test Key
               </button>
               <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
                 Get free key at Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
@@ -729,7 +729,7 @@
             </div>
           </div>
           <input type="password" id="prof-gemini-key" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-purple-500">
-          <div id="gemini-test-result" class="text-[11px] hidden"></div>
+          <div id="gemini-test-result" class="text-[11px] hidden p-2 rounded-lg bg-slate-900 border border-slate-800 mt-2"></div>
           <p class="text-[11px] text-slate-400">Your key is stored privately in your local browser storage.</p>
         </div>
 
@@ -814,7 +814,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.0.5 -->
-  <script src="app.js?v=1.0.5"></script>
+  <!-- App Main JavaScript with Cache Busting v1.0.6 -->
+  <script src="app.js?v=1.0.6"></script>
 </body>
 </html>

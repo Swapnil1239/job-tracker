@@ -1,4 +1,4 @@
-/* CareerFlow AI - Robust Bulletproof Gemini AI Integration with Diagnostic Testing */
+/* CareerFlow AI - Dynamic Gemini Discovery Engine with GET /models Pre-Flight Validation */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -577,7 +577,7 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & DIAGNOSTIC GEMINI AI CALL ENGINE
+// 4. APPLY FASTER HUB & PRE-FLIGHT VALIDATED GEMINI DISCOVERY
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -602,49 +602,34 @@ async function testGeminiApiKey() {
   resElem.classList.remove('hidden');
 
   if (!keyInput) {
-    resElem.className = 'text-[11px] text-amber-400 font-bold mt-1';
-    resElem.textContent = 'Please paste a key first.';
+    resElem.className = 'text-[11px] text-amber-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30';
+    resElem.textContent = '⚠️ Please paste an API key first.';
     return;
   }
 
-  resElem.className = 'text-[11px] text-purple-300 font-bold mt-1 animate-pulse';
-  resElem.textContent = 'Testing key against Google AI Studio...';
+  resElem.className = 'text-[11px] text-purple-300 font-bold mt-2 p-2 rounded bg-slate-900 border border-purple-500/30 animate-pulse';
+  resElem.textContent = 'Testing API Key against Google AI Studio ListModels...';
 
-  // Test endpoints
-  const endpointsToTest = [
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyInput}`,
-    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${keyInput}`,
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keyInput}`,
-    `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${keyInput}`
-  ];
+  try {
+    // Perform simple GET to ListModels (No CORS preflight)
+    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${keyInput}`);
+    const data = await listRes.json();
 
-  for (const url of endpointsToTest) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'Respond with OK' }] }]
-        })
-      });
-
-      const data = await response.json();
-      if (data.candidates && data.candidates[0]) {
-        resElem.className = 'text-[11px] text-emerald-400 font-bold mt-1';
-        resElem.textContent = '✅ Success! Your Gemini API key is active & working!';
-        return;
-      } else if (data.error) {
-        if (data.error.message.includes('API key not valid')) {
-          resElem.className = 'text-[11px] text-rose-400 font-bold mt-1';
-          resElem.textContent = '❌ Invalid Key: Google says this API key is not valid.';
-          return;
-        }
-      }
-    } catch (e) {}
+    if (listRes.ok && data.models && Array.isArray(data.models)) {
+      const validModels = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
+      resElem.className = 'text-[11px] text-emerald-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-emerald-500/30';
+      resElem.innerHTML = `✅ Success! Found ${validModels.length} active models for your key (e.g. ${validModels[0]?.name}).`;
+    } else if (data.error) {
+      resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
+      resElem.innerHTML = `❌ Google API Error: ${escapeHTML(data.error.message)}<br><span class="text-slate-400 text-[10px] font-normal">Check or create a new key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline text-pink-400">aistudio.google.com</a></span>`;
+    } else {
+      resElem.className = 'text-[11px] text-amber-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30';
+      resElem.textContent = '⚠️ Unexpected response from Google AI Studio.';
+    }
+  } catch (err) {
+    resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
+    resElem.textContent = `❌ Network Error: ${err.message}. Please check browser extensions or internet connection.`;
   }
-
-  resElem.className = 'text-[11px] text-rose-400 font-bold mt-1';
-  resElem.textContent = '❌ Connection failed. Check key at https://aistudio.google.com/app/apikey';
 }
 
 async function generateAIText(type) {
@@ -676,23 +661,50 @@ async function generateAIText(type) {
       ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
       : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
 
-    // Multi-version & Multi-model endpoints to test
-    const endpoints = [
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`
-    ];
+    let activeModelPath = '';
+    let apiVersion = 'v1beta';
+
+    // Pre-flight GET request to fetch exact active models for this key
+    try {
+      const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        if (listData.models && Array.isArray(listData.models)) {
+          const valid = listData.models.filter(m => 
+            m.supportedGenerationMethods && 
+            m.supportedGenerationMethods.includes('generateContent') &&
+            !m.name.includes('2.5-flash') && // Skip deprecated 2.5-flash preview
+            !m.name.includes('1.0-pro')    // Skip legacy 1.0-pro
+          );
+
+          if (valid.length > 0) {
+            // Prioritize flash 2.0 or 1.5
+            const flash = valid.find(m => m.name.includes('gemini-2.0-flash') || m.name.includes('gemini-1.5-flash'));
+            const pro = valid.find(m => m.name.includes('pro'));
+            activeModelPath = flash ? flash.name : (pro ? pro.name : valid[0].name);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Preflight discovery failed:', e);
+    }
+
+    if (!activeModelPath) {
+      activeModelPath = 'models/gemini-1.5-flash';
+    }
+
+    // Clean model string
+    const cleanModel = activeModelPath.startsWith('models/') ? activeModelPath : `models/${activeModelPath}`;
 
     let success = false;
-    let primaryErrorMsg = '';
+    let lastErrorMsg = '';
 
-    for (let i = 0; i < endpoints.length; i++) {
-      const endpoint = endpoints[i];
+    // Attempt generateContent with discovered model
+    const apiVersionsToTry = ['v1beta', 'v1'];
+
+    for (const ver of apiVersionsToTry) {
       try {
-        const response = await fetch(endpoint, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/${ver}/${cleanModel}:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -705,20 +717,20 @@ async function generateAIText(type) {
         if (data.candidates && data.candidates[0] && data.candidates[0].content) {
           const generatedText = data.candidates[0].content.parts[0].text;
           outputText.textContent = generatedText;
-          showToast(`Generated via Gemini AI!`);
+          showToast(`Generated via Gemini (${cleanModel.replace('models/', '')})!`);
           success = true;
           break;
         } else if (data.error) {
-          if (i === 0) primaryErrorMsg = data.error.message;
+          lastErrorMsg = data.error.message;
         }
       } catch (err) {
-        if (i === 0) primaryErrorMsg = err.message;
+        lastErrorMsg = err.message;
       }
     }
 
     if (!success) {
-      outputText.textContent = `Gemini API Diagnostic Note:\n${primaryErrorMsg || 'API Key validation issue'}\n\n💡 How to resolve:\n1. Open https://aistudio.google.com/app/apikey\n2. Click "Create API key"\n3. Paste your fresh key into Profile Settings and click "Test Key".`;
-      showToast('Gemini Key Issue - Click Test Key in settings');
+      outputText.textContent = `Google Gemini API Note:\n${lastErrorMsg}\n\n💡 Resolution Steps:\n1. Click "Master Resume Profile" button above.\n2. Click "🧪 Test Key" next to your API key field.\n3. If Google says invalid key, copy a fresh key from https://aistudio.google.com/app/apikey`;
+      showToast('Gemini API Error - Click Test Key in settings');
     }
 
     activeBtn.innerHTML = originalText;
