@@ -1,4 +1,4 @@
-/* CareerFlow AI - Application Logic & State Manager with Dynamic Gemini AI Discovery */
+/* CareerFlow AI - Robust Bulletproof Gemini AI Integration */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -577,7 +577,7 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & DYNAMIC GEMINI AI DISCOVERY
+// 4. APPLY FASTER HUB & BULLETPROOF GEMINI AI GENERATOR
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -616,61 +616,57 @@ async function generateAIText(type) {
     activeBtn.disabled = true;
 
     outputTitle.innerHTML = `<i class="fa-solid fa-sparkles text-pink-400 animate-pulse"></i> Gemini AI ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'} (${tone})`;
-    outputText.textContent = 'Discovering active Gemini model & generating content...';
+    outputText.textContent = 'Connecting to Google Gemini AI...';
 
     const systemPrompt = type === 'cover-letter' 
       ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
       : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
 
-    try {
-      // Step 1: Discover supported Gemini models dynamically
-      let chosenModel = 'models/gemini-1.5-flash';
+    // Production Stable Models (Prioritized & Filtering out 2.5-flash)
+    const preferredModels = [
+      'models/gemini-2.0-flash',
+      'models/gemini-1.5-flash',
+      'models/gemini-1.5-pro',
+      'models/gemini-2.0-flash-lite',
+      'models/gemini-1.0-pro'
+    ];
+
+    let success = false;
+    let lastErrorMsg = '';
+
+    for (const modelPath of preferredModels) {
       try {
-        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        if (listRes.ok) {
-          const listData = await listRes.json();
-          if (listData.models && Array.isArray(listData.models)) {
-            const valid = listData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
-            if (valid.length > 0) {
-              const flash = valid.find(m => m.name.includes('flash'));
-              const pro = valid.find(m => m.name.includes('pro'));
-              chosenModel = flash ? flash.name : (pro ? pro.name : valid[0].name);
-            }
-          }
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: systemPrompt }] }]
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          const generatedText = data.candidates[0].content.parts[0].text;
+          outputText.textContent = generatedText;
+          showToast(`Generated using Gemini AI (${modelPath.replace('models/', '')})!`);
+          success = true;
+          break;
+        } else if (data.error) {
+          lastErrorMsg = data.error.message;
         }
-      } catch (e) {
-        console.warn('Model discovery failed, fallback to default.');
+      } catch (err) {
+        lastErrorMsg = err.message;
       }
-
-      const cleanModelPath = chosenModel.startsWith('models/') ? chosenModel : `models/${chosenModel}`;
-
-      // Step 2: Call generateContent
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${cleanModelPath}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: systemPrompt }] }]
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const generatedText = data.candidates[0].content.parts[0].text;
-        outputText.textContent = generatedText;
-        showToast(`Generated using Gemini AI (${cleanModelPath})!`);
-      } else if (data.error) {
-        outputText.textContent = `Gemini API Error: ${data.error.message}\n\nPlease check your Gemini API key in Profile Settings or visit https://aistudio.google.com/app/apikey`;
-      } else {
-        fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
-      }
-    } catch (err) {
-      outputText.textContent = `API Error: ${err.message}\nFalling back to local template...`;
-      fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
-    } finally {
-      activeBtn.innerHTML = originalText;
-      activeBtn.disabled = false;
     }
+
+    if (!success) {
+      outputText.textContent = `Gemini API Error: ${lastErrorMsg}\n\nPlease check your Gemini API key in Profile Settings or obtain a free key at https://aistudio.google.com/app/apikey.`;
+      showToast('Gemini API key error');
+    }
+
+    activeBtn.innerHTML = originalText;
+    activeBtn.disabled = false;
   } else {
     fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
     showToast('Add Gemini API Key in Profile Settings for AI generations!');
@@ -700,7 +696,7 @@ ${profile.contact}
 ${profile.linkedin}
 
 ---------------------------------------------------
-💡 Tip: Enter a free Gemini API Key in Profile Settings to generate deep AI cover letters with Gemini 1.5 Flash!`;
+💡 Tip: Enter a free Gemini API Key in Profile Settings to generate deep AI cover letters with Gemini!`;
   } else if (type === 'cold-email') {
     outputTitle.innerHTML = `<i class="fa-solid fa-paper-plane text-indigo-400"></i> Local Template Cold Email (${tone})`;
     generated = `Subject: Expressing Interest: ${position} at ${company} - ${profile.name}
