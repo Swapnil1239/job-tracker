@@ -1,4 +1,4 @@
-/* CareerFlow AI - Multi-Engine AI Integration + AI ATS Match Score PDF Studio */
+/* CareerFlow AI - Multi-Engine AI Integration + Master Career Profile Bank Studio */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -12,6 +12,12 @@ let profile = {
   portfolio: 'https://github.com/alexvance-code',
   summary: 'Full-stack software engineer with 5+ years of experience building high-performance web applications, cloud microservices, and slick user interfaces with React, Node.js, and TypeScript.',
   pitch: 'I excel at bringing ambitious products from zero to one. Passionate about system design, frontend performance, and delivering memorable developer and end-user experiences.',
+  eduDegree: 'B.S. in Computer Science',
+  eduSchool: 'State University',
+  eduYear: '2018 - 2022 | Honors Graduate',
+  workTitle: 'Senior Full Stack Software Engineer at TechScale Solutions (2023 - Present)',
+  workBullets: '• Engineered responsive web applications and REST APIs serving 500k+ monthly active users.\n• Reduced core application render latency by 40% with client state optimization and code splitting.\n• Mentored junior engineers and led agile cross-functional sprint reviews.',
+  achievements: 'AWS Certified Solutions Architect | 1st Place Hackathon Winner | Developer of the Year 2025',
   geminiApiKey: '',
   groqApiKey: ''
 };
@@ -210,7 +216,12 @@ function updateProfileDOM() {
   document.getElementById('snippet-name-val').textContent = profile.name || 'Your Name';
   document.getElementById('snippet-contact-val').textContent = profile.contact || 'Email / Phone';
   document.getElementById('snippet-linkedin-val').textContent = profile.linkedin || 'LinkedIn URL';
-  document.getElementById('snippet-portfolio-val').textContent = profile.portfolio || 'Portfolio URL';
+  if (document.getElementById('snippet-education-val')) {
+    document.getElementById('snippet-education-val').textContent = `${profile.eduDegree || 'Degree'} - ${profile.eduSchool || 'University'}`;
+  }
+  if (document.getElementById('snippet-achievements-val')) {
+    document.getElementById('snippet-achievements-val').textContent = profile.achievements || 'Achievements & Certifications';
+  }
   document.getElementById('snippet-summary-val').textContent = profile.summary || 'Summary...';
   document.getElementById('snippet-pitch-val').textContent = profile.pitch || 'Pitch...';
 
@@ -218,6 +229,15 @@ function updateProfileDOM() {
   document.getElementById('prof-contact').value = profile.contact || '';
   document.getElementById('prof-linkedin').value = profile.linkedin || '';
   document.getElementById('prof-portfolio').value = profile.portfolio || '';
+
+  if (document.getElementById('prof-edu-degree')) document.getElementById('prof-edu-degree').value = profile.eduDegree || '';
+  if (document.getElementById('prof-edu-school')) document.getElementById('prof-edu-school').value = profile.eduSchool || '';
+  if (document.getElementById('prof-edu-year')) document.getElementById('prof-edu-year').value = profile.eduYear || '';
+
+  if (document.getElementById('prof-work-title')) document.getElementById('prof-work-title').value = profile.workTitle || '';
+  if (document.getElementById('prof-work-bullets')) document.getElementById('prof-work-bullets').value = profile.workBullets || '';
+  if (document.getElementById('prof-achievements')) document.getElementById('prof-achievements').value = profile.achievements || '';
+
   document.getElementById('prof-summary').value = profile.summary || '';
   document.getElementById('prof-pitch').value = profile.pitch || '';
   document.getElementById('prof-gemini-key').value = profile.geminiApiKey || '';
@@ -621,6 +641,12 @@ function renderLiveResumePreview(customData) {
     summary: profile.summary || 'Full-stack software engineer with 5+ years building scalable web applications and cloud microservices.',
     matchScore: 96,
     matchedKeywords: ['React', 'TypeScript', 'Node.js', 'REST APIs', 'System Architecture'],
+    education: {
+      degree: profile.eduDegree || 'B.S. in Computer Science',
+      school: profile.eduSchool || 'State University',
+      year: profile.eduYear || '2018 – 2022 | Honors Graduate'
+    },
+    achievements: profile.achievements || 'AWS Certified Solutions Architect | Developer of the Year 2025',
     skills: {
       languages: 'JavaScript, TypeScript, Python, HTML5/CSS3, SQL',
       frameworks: 'React, Next.js, Node.js, Express, Tailwind CSS, REST APIs',
@@ -628,15 +654,13 @@ function renderLiveResumePreview(customData) {
     },
     experience: [
       {
-        role: 'Senior Full Stack Software Engineer',
-        company: 'TechScale Solutions',
-        location: 'San Francisco, CA',
+        role: profile.workTitle || 'Senior Full Stack Software Engineer at TechScale Solutions',
         period: '2023 – Present',
-        bullets: [
+        bullets: (profile.workBullets ? profile.workBullets.split('\n').filter(b => b.trim()) : [
           'Engineered responsive web applications and REST APIs serving 500k+ monthly active users.',
           'Reduced core application render latency by 40% with client state optimization and code splitting.',
           'Mentored junior engineers and led agile cross-functional sprint reviews.'
-        ]
+        ])
       }
     ]
   };
@@ -684,21 +708,28 @@ function renderLiveResumePreview(customData) {
         ${data.experience.map(exp => `
           <div class="space-y-0.5">
             <div class="flex justify-between items-baseline text-xs font-bold text-slate-900">
-              <span>${escapeHTML(exp.role)} – ${escapeHTML(exp.company)}</span>
-              <span class="text-slate-600 font-normal">${escapeHTML(exp.period)}</span>
+              <span>${escapeHTML(exp.role)}</span>
+              <span class="text-slate-600 font-normal">${escapeHTML(exp.period || '')}</span>
             </div>
             <ul class="list-disc list-inside text-xs text-slate-800 space-y-0.5 pl-1">
-              ${exp.bullets.map(b => `<li>${escapeHTML(b)}</li>`).join('')}
+              ${exp.bullets.map(b => `<li>${escapeHTML(b.replace(/^•\s*/, ''))}</li>`).join('')}
             </ul>
           </div>
         `).join('')}
       </div>
 
+      ${data.achievements ? `
+      <div class="space-y-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Key Achievements & Certifications</h2>
+        <p class="text-xs text-slate-800">${escapeHTML(data.achievements)}</p>
+      </div>
+      ` : ''}
+
       <div class="space-y-1 pt-1">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Education</h2>
         <div class="flex justify-between text-xs text-slate-900 font-semibold">
-          <span>B.S. in Computer Science</span>
-          <span class="font-normal text-slate-600">Honors Graduate</span>
+          <span>${escapeHTML(data.education.degree)} – ${escapeHTML(data.education.school)}</span>
+          <span class="font-normal text-slate-600">${escapeHTML(data.education.year)}</span>
         </div>
       </div>
     `;
@@ -708,7 +739,7 @@ function renderLiveResumePreview(customData) {
       <div class="flex justify-between items-start border-b-2 border-indigo-600 pb-3">
         <div>
           <h1 class="text-2xl font-extrabold text-indigo-950">${escapeHTML(data.name)}</h1>
-          <p class="text-xs font-semibold text-indigo-600 mt-0.5">Full Stack Software Engineer</p>
+          <p class="text-xs font-semibold text-indigo-600 mt-0.5">Software Engineering Professional</p>
         </div>
         <div class="text-right text-[11px] text-slate-600 space-y-0.5">
           <p>${escapeHTML(data.contact)}</p>
@@ -727,22 +758,33 @@ function renderLiveResumePreview(customData) {
       </div>
 
       <div class="space-y-2">
-        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Selected Experience</h2>
+        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Work Experience</h2>
         ${data.experience.map(exp => `
           <div>
             <div class="flex justify-between text-xs font-bold text-slate-900">
-              <span>${escapeHTML(exp.role)} @ ${escapeHTML(exp.company)}</span>
-              <span class="text-indigo-600">${escapeHTML(exp.period)}</span>
+              <span>${escapeHTML(exp.role)}</span>
+              <span class="text-indigo-600">${escapeHTML(exp.period || '')}</span>
             </div>
             <ul class="list-disc list-inside text-xs text-slate-700 mt-1 space-y-0.5">
-              ${exp.bullets.map(b => `<li>${escapeHTML(b)}</li>`).join('')}
+              ${exp.bullets.map(b => `<li>${escapeHTML(b.replace(/^•\s*/, ''))}</li>`).join('')}
             </ul>
           </div>
         `).join('')}
       </div>
+
+      ${data.achievements ? `
+      <div>
+        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Achievements & Certifications</h2>
+        <p class="text-xs text-slate-700">${escapeHTML(data.achievements)}</p>
+      </div>
+      ` : ''}
+
+      <div>
+        <h2 class="text-xs font-extrabold text-indigo-900 uppercase tracking-wider mb-1">Education</h2>
+        <p class="text-xs text-slate-800 font-semibold">${escapeHTML(data.education.degree)} – ${escapeHTML(data.education.school)} <span class="font-normal text-slate-500">(${escapeHTML(data.education.year)})</span></p>
+      </div>
     `;
   } else {
-    // Default Fallback
     renderLiveResumePreview();
   }
 }
@@ -753,13 +795,13 @@ async function generateTailoredResume() {
   const btnGen = document.getElementById('btn-generate-resume');
 
   const originalBtn = btnGen.innerHTML;
-  btnGen.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI Optimizing for ATS...`;
+  btnGen.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI Optimizing My Career Experience...`;
   btnGen.disabled = true;
 
   const geminiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
   const groqKey = profile.groqApiKey ? profile.groqApiKey.trim() : '';
 
-  const systemPrompt = `You are an executive ATS Resume Screener & AI Resume Tailoring Architect. Analyze the following Job Description and tailor the candidate profile to achieve a 95%+ ATS match score on Greenhouse/Workday/Lever.\n\nJob Description:\n${jdText}\n\nCandidate Profile:\nName: ${profile.name}\nContact: ${profile.contact}\nLinkedIn: ${profile.linkedin}\nPortfolio: ${profile.portfolio}\nSummary: ${profile.summary}\n\nTasks:\n1. Extract 5 top critical keywords from the JD.\n2. Rewrite candidate summary integrating 3 of those keywords naturally.\n3. Rewrite experience bullets into metric-driven statements using STAR method.\n\nOutput MUST be 100% RAW VALID JSON only (no markdown block wrapper) matching this schema:\n{\n  "summary": "...",\n  "skills": {"languages": "...", "frameworks": "...", "tools": "..."},\n  "matchedKeywords": ["Key1", "Key2", "Key3", "Key4", "Key5"],\n  "matchScore": 96,\n  "bullets": ["Bullet 1 with metrics", "Bullet 2 with metrics", "Bullet 3 with metrics"]\n}`;
+  const systemPrompt = `You are an executive ATS Resume Tailoring Architect. Analyze the following Job Description and tailor the candidate's real work background, education, and achievements into an ATS-optimized resume format with 95%+ match score.\n\nJob Description:\n${jdText}\n\nCandidate Profile:\nName: ${profile.name}\nContact: ${profile.contact}\nLinkedIn: ${profile.linkedin}\nPortfolio: ${profile.portfolio}\nEducation: ${profile.eduDegree} at ${profile.eduSchool} (${profile.eduYear})\nWork Experience History: ${profile.workTitle}\nOriginal Work Bullets: ${profile.workBullets}\nKey Achievements: ${profile.achievements}\nProfessional Summary: ${profile.summary}\n\nTasks:\n1. Extract 5 top critical keywords from the JD.\n2. Rewrite candidate summary integrating 3 of those keywords naturally.\n3. Rewrite experience bullets incorporating the exact candidate achievements & work history into STAR metric statements.\n\nOutput MUST be 100% RAW VALID JSON only (no markdown wrapper) matching this schema:\n{\n  "summary": "...",\n  "skills": {"languages": "...", "frameworks": "...", "tools": "..."},\n  "matchedKeywords": ["Key1", "Key2", "Key3", "Key4", "Key5"],\n  "matchScore": 96,\n  "bullets": ["Bullet 1 with metrics", "Bullet 2 with metrics", "Bullet 3 with metrics"]\n}`;
 
   try {
     let jsonStr = '';
@@ -798,6 +840,12 @@ async function generateTailoredResume() {
         summary: parsed.summary || profile.summary,
         matchScore: parsed.matchScore || 96,
         matchedKeywords: parsed.matchedKeywords || ['React', 'TypeScript', 'REST APIs', 'System Design'],
+        education: {
+          degree: profile.eduDegree || 'B.S. in Computer Science',
+          school: profile.eduSchool || 'State University',
+          year: profile.eduYear || '2018 – 2022'
+        },
+        achievements: profile.achievements || '',
         skills: {
           languages: parsed.skills?.languages || 'JavaScript, TypeScript, Python, HTML/CSS',
           frameworks: parsed.skills?.frameworks || 'React, Next.js, Node.js, Express, TailwindCSS',
@@ -805,15 +853,9 @@ async function generateTailoredResume() {
         },
         experience: [
           {
-            role: 'Senior Software Engineer',
-            company: 'TechScale Solutions',
-            location: 'San Francisco, CA',
+            role: profile.workTitle || 'Senior Software Engineer at TechScale Solutions',
             period: '2023 – Present',
-            bullets: parsed.bullets || [
-              'Engineered responsive web applications and REST APIs serving 500k+ users.',
-              'Reduced render latency by 40% using modern state management.',
-              'Collaborated in agile cross-functional teams to accelerate release velocity.'
-            ]
+            bullets: parsed.bullets || (profile.workBullets ? profile.workBullets.split('\n') : ['Engineered responsive web applications serving 500k+ users.'])
           }
         ]
       };
@@ -1356,6 +1398,12 @@ function saveProfileForm(e) {
     contact: document.getElementById('prof-contact').value.trim(),
     linkedin: document.getElementById('prof-linkedin').value.trim(),
     portfolio: document.getElementById('prof-portfolio').value.trim(),
+    eduDegree: document.getElementById('prof-edu-degree') ? document.getElementById('prof-edu-degree').value.trim() : profile.eduDegree,
+    eduSchool: document.getElementById('prof-edu-school') ? document.getElementById('prof-edu-school').value.trim() : profile.eduSchool,
+    eduYear: document.getElementById('prof-edu-year') ? document.getElementById('prof-edu-year').value.trim() : profile.eduYear,
+    workTitle: document.getElementById('prof-work-title') ? document.getElementById('prof-work-title').value.trim() : profile.workTitle,
+    workBullets: document.getElementById('prof-work-bullets') ? document.getElementById('prof-work-bullets').value.trim() : profile.workBullets,
+    achievements: document.getElementById('prof-achievements') ? document.getElementById('prof-achievements').value.trim() : profile.achievements,
     summary: document.getElementById('prof-summary').value.trim(),
     pitch: document.getElementById('prof-pitch').value.trim(),
     geminiApiKey: document.getElementById('prof-gemini-key').value.trim(),
@@ -1364,7 +1412,8 @@ function saveProfileForm(e) {
 
   saveProfileData();
   closeMasterProfileModal();
-  showToast('Profile & AI keys saved!');
+  renderLiveResumePreview();
+  showToast('Saved Master Profile & Career Data!');
 }
 
 function openBookmarkletModal() {
