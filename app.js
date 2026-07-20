@@ -681,37 +681,46 @@ function renderLiveResumePreview(customData) {
     summaryElem.textContent = `High alignment with JD keywords: ${data.matchedKeywords.join(', ')}.`;
   }
 
+  // JAKE'S OVERLEAF RESUME FORMAT (EXACT OVERLEAF ATS VECTOR TEMPLATE)
   if (formatChoice === 'ats-clean') {
     container.className = 'w-full max-w-[595px] bg-white text-slate-900 p-8 rounded shadow-2xl space-y-3 font-sans text-left transition-all leading-tight';
     container.innerHTML = `
-      <div class="border-b border-slate-900 pb-2 text-center">
-        <h1 class="text-2xl font-bold uppercase tracking-wider text-slate-900">${escapeHTML(data.name)}</h1>
-        <p class="text-xs text-slate-700 mt-1">${escapeHTML(data.contact)} | ${escapeHTML(data.linkedin)} | ${escapeHTML(data.portfolio)}</p>
+      <!-- HEADING: CENTERED NAME & CONTACT PIPES -->
+      <div class="text-center pb-2 border-b border-slate-900">
+        <h1 class="text-2xl font-bold uppercase tracking-wider text-slate-900 mb-1">${escapeHTML(data.name)}</h1>
+        <p class="text-[11px] text-slate-800 font-medium">
+          ${escapeHTML(data.contact)} &nbsp;|&nbsp; 
+          <a href="${escapeHTML(data.linkedin)}" target="_blank" class="text-slate-900 underline font-semibold">LinkedIn</a> &nbsp;|&nbsp; 
+          <a href="${escapeHTML(data.portfolio)}" target="_blank" class="text-slate-900 underline font-semibold">Portfolio</a>
+        </p>
       </div>
 
+      <!-- PROFESSIONAL SUMMARY -->
       <div class="space-y-1">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Professional Summary</h2>
-        <p class="text-xs text-slate-800 leading-snug">${escapeHTML(data.summary)}</p>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Professional Summary</h2>
+        <p class="text-[11px] text-slate-800 leading-snug">${escapeHTML(data.summary)}</p>
       </div>
 
+      <!-- TECHNICAL SKILLS MATRIX -->
       <div class="space-y-1">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Technical Skills</h2>
-        <div class="text-xs text-slate-800 space-y-0.5">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Technical Skills</h2>
+        <div class="text-[11px] text-slate-800 space-y-0.5">
           <p><strong>Languages:</strong> ${escapeHTML(data.skills.languages)}</p>
-          <p><strong>Frameworks:</strong> ${escapeHTML(data.skills.frameworks)}</p>
-          <p><strong>Tools & Infrastructure:</strong> ${escapeHTML(data.skills.tools)}</p>
+          <p><strong>Frameworks & Tools:</strong> ${escapeHTML(data.skills.frameworks)}</p>
+          <p><strong>Infrastructure & Tools:</strong> ${escapeHTML(data.skills.tools)}</p>
         </div>
       </div>
 
+      <!-- WORK EXPERIENCE (JAKE'S RESUME TABULAR LAYOUT) -->
       <div class="space-y-2">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Work Experience</h2>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Work Experience</h2>
         ${data.experience.map(exp => `
           <div class="space-y-0.5">
-            <div class="flex justify-between items-baseline text-xs font-bold text-slate-900">
+            <div class="flex justify-between items-baseline text-[11px] font-bold text-slate-900">
               <span>${escapeHTML(exp.role)}</span>
-              <span class="text-slate-600 font-normal">${escapeHTML(exp.period || '')}</span>
+              <span class="text-slate-600 font-normal italic">${escapeHTML(exp.period || '')}</span>
             </div>
-            <ul class="list-disc list-inside text-xs text-slate-800 space-y-0.5 pl-1">
+            <ul class="list-disc list-inside text-[11px] text-slate-800 space-y-0.5 pl-1 leading-snug">
               ${exp.bullets.map(b => `<li>${escapeHTML(b.replace(/^•\s*/, ''))}</li>`).join('')}
             </ul>
           </div>
@@ -719,17 +728,19 @@ function renderLiveResumePreview(customData) {
       </div>
 
       ${data.achievements ? `
+      <!-- ACHIEVEMENTS & CERTIFICATIONS -->
       <div class="space-y-1">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Key Achievements & Certifications</h2>
-        <p class="text-xs text-slate-800">${escapeHTML(data.achievements)}</p>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Key Achievements & Certifications</h2>
+        <p class="text-[11px] text-slate-800">${escapeHTML(data.achievements)}</p>
       </div>
       ` : ''}
 
-      <div class="space-y-1 pt-1">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-400 pb-0.5">Education</h2>
-        <div class="flex justify-between text-xs text-slate-900 font-semibold">
-          <span>${escapeHTML(data.education.degree)} – ${escapeHTML(data.education.school)}</span>
-          <span class="font-normal text-slate-600">${escapeHTML(data.education.year)}</span>
+      <!-- EDUCATION -->
+      <div class="space-y-1 pt-0.5">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Education</h2>
+        <div class="flex justify-between text-[11px] text-slate-900 font-bold">
+          <span>${escapeHTML(data.education.degree)} – <span class="font-normal italic">${escapeHTML(data.education.school)}</span></span>
+          <span class="font-normal text-slate-600 italic">${escapeHTML(data.education.year)}</span>
         </div>
       </div>
     `;
@@ -875,29 +886,103 @@ async function generateTailoredResume() {
   btnGen.disabled = false;
 }
 
+// 100% Vector PDF Download & Print Engine
 function downloadResumePDF() {
   const element = document.getElementById('pdf-export-container');
   if (!element) return;
 
-  showToast('Generating PDF...');
+  showToast('Opening Crisp Vector Print Engine (Save as PDF)...');
+  window.print();
+}
 
-  const opt = {
-    margin:       [0.4, 0.4, 0.4, 0.4],
-    filename:     `${(profile.name || 'Resume').replace(/\s+/g, '_')}_ATS_Optimized_Resume.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+// Overleaf / LaTeX Code Exporter
+function copyLaTeXCode() {
+  const d = activeResumeData || {
+    name: profile.name || 'Swapnil Sahare',
+    contact: profile.contact || 'swapnilsahare1239@gmail.com',
+    linkedin: profile.linkedin || 'https://linkedin.com/in/swapnil-s',
+    portfolio: profile.portfolio || 'https://github.com/Swapnil1239',
+    summary: profile.summary || 'Senior Android & Full Stack Software Engineer...',
+    skills: { languages: 'Kotlin, Java, JavaScript, Python', frameworks: 'Android SDK, React, Node.js', tools: 'Git, Docker, AWS' },
+    experience: [{ role: profile.workTitle || 'Senior Software Engineer', period: '2023 - Present', bullets: (profile.workBullets ? profile.workBullets.split('\n') : ['Engineered scalable software.']) }],
+    education: { degree: profile.eduDegree || 'B.S. Computer Science', school: profile.eduSchool || 'University', year: profile.eduYear || '2018 - 2022' },
+    achievements: profile.achievements || 'AWS Certified Solutions Architect'
   };
 
-  if (window.html2pdf) {
-    html2pdf().set(opt).from(element).save().then(() => {
-      showToast('ATS PDF Resume downloaded!');
-    }).catch(() => {
-      window.print();
-    });
-  } else {
-    window.print();
-  }
+  const latex = `\\documentclass[letterpaper,11pt]{article}
+\\usepackage{latexsym}
+\\usepackage[empty]{fullpage}
+\\usepackage{titlesec}
+\\usepackage{marvosym}
+\\usepackage[usenames,dvipsnames]{color}
+\\usepackage{verbatim}
+\\usepackage{enumitem}
+\\usepackage[hidelinks]{hyperref}
+\\usepackage{fancyhdr}
+\\usepackage[english]{babel}
+
+\\pagestyle{fancy}
+\\fancyhf{}
+\\renewcommand{\\headrulewidth}{0pt}
+\\renewcommand{\\footrulewidth}{0pt}
+
+\\addtolength{\\oddsidemargin}{-0.5in}
+\\addtolength{\\evensidemargin}{-0.5in}
+\\addtolength{\\textwidth}{1in}
+\\addtolength{\\topmargin}{-.5in}
+\\addtolength{\\textheight}{1.0in}
+
+\\urlstyle{same}
+\\raggedbottom
+\\raggedright
+\\setlength{\\tabcolsep}{0in}
+
+\\titleformat{\\section}{\\vspace{-4pt}\\scshape\\raggedright\\large}{}{0em}{}[\\color{black}\\vline\\hrule height 0.5pt \\vspace{-5pt}]
+
+\\begin{document}
+
+\\begin{center}
+    \\textbf{\\Huge \\scshape ${d.name}} \\\\ \\vspace{1pt}
+    \\small ${d.contact} $|$ \\href{${d.linkedin}}{LinkedIn} $|$ \\href{${d.portfolio}}{Portfolio}
+\\end{center}
+
+\\section{Professional Summary}
+\\small{${d.summary}}
+
+\\section{Technical Skills}
+\\begin{itemize}[leftmargin=0.15in, label={}]
+    \\small{\\item{
+     \\textbf{Languages}{: ${d.skills.languages}} \\\\
+     \\textbf{Frameworks}{: ${d.skills.frameworks}} \\\\
+     \\textbf{Developer Tools}{: ${d.skills.tools}}
+    }}
+\\end{itemize}
+
+\\section{Work Experience}
+\\begin{itemize}[leftmargin=0.15in, label={}]
+  \\item
+    \\begin{tabular*}{\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{${d.experience[0].role}} & ${d.experience[0].period} \\\\
+    \\end{tabular*}\\vspace{-5pt}
+    \\begin{itemize}
+      ${d.experience[0].bullets.map(b => `\\item \\small{${b.replace(/^•\s*/, '')}}`).join('\n      ')}
+    \\end{itemize}
+\\end{itemize}
+
+\\section{Education}
+\\begin{itemize}[leftmargin=0.15in, label={}]
+  \\item
+    \\begin{tabular*}{\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{${d.education.degree}} - ${d.education.school} & ${d.education.year} \\\\
+    \\end{tabular*}
+\\end{itemize}
+
+${d.achievements ? `\\section{Key Achievements}
+\\small{${d.achievements}}` : ''}
+
+\\end{document}`;
+
+  copyToClipboard(latex, 'Overleaf LaTeX Code');
 }
 
 function copySnippet(elementId, label) {

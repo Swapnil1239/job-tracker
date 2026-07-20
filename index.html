@@ -37,11 +37,8 @@
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- html2pdf.js CDN for 1-Click Client PDF Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.5.0">
+  <link rel="stylesheet" href="styles.css?v=1.6.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -59,7 +56,7 @@
             <i class="fa-solid fa-graduation-cap text-[10px] text-emerald-400"></i> Master Career Bank
           </span>
         </h1>
-        <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Export 95%+ ATS Score PDF Resumes</p>
+        <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Export 95%+ ATS Vector PDF Resumes</p>
       </div>
     </div>
 
@@ -382,7 +379,7 @@
                 <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold">95%+ ATS Compliance Guaranteed</span>
               </h2>
               <p class="text-xs text-slate-300 mt-1 max-w-2xl">
-                The AI analyzes the Job Description, extracts required skills & keywords, rewrites your personal work experience & achievements, and generates an ATS PDF resume!
+                The AI analyzes the Job Description, extracts required skills & keywords, rewrites your personal work experience & achievements, and generates a crisp 100% Vector ATS PDF resume!
               </p>
             </div>
           </div>
@@ -408,13 +405,16 @@
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-xs text-slate-400">Design Template:</span>
             <select id="resume-format-choice" onchange="renderLiveResumePreview()" class="bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-emerald-300 px-3 py-1.5 focus:outline-none">
-              <option value="ats-clean" selected>🤖 ATS Clean (1-Page High Conversion)</option>
+              <option value="ats-clean" selected>📄 Jake's Resume (Overleaf ATS Vector Standard)</option>
               <option value="modern-tech">✨ Modern Tech Minimalist</option>
-              <option value="executive-classic">💼 Executive Professional</option>
             </select>
 
+            <button onclick="copyLaTeXCode()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-code"></i> Copy LaTeX
+            </button>
+
             <button onclick="downloadResumePDF()" class="glow-btn px-4 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 shadow">
-              <i class="fa-solid fa-file-arrow-down text-sm"></i> Download PDF
+              <i class="fa-solid fa-file-arrow-down text-sm"></i> Download Vector PDF
             </button>
           </div>
         </div>
@@ -463,7 +463,7 @@
               </button>
 
               <button onclick="downloadResumePDF()" class="px-4 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 text-xs shadow-lg transition">
-                <i class="fa-solid fa-download"></i> Download PDF
+                <i class="fa-solid fa-download"></i> Download Vector PDF
               </button>
             </div>
           </div>
@@ -970,7 +970,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.5.0 -->
-  <script src="app.js?v=1.5.0"></script>
+  <!-- App Main JavaScript with Cache Busting v1.6.0 -->
+  <script src="app.js?v=1.6.0"></script>
 </body>
 </html>
