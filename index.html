@@ -38,7 +38,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.0.7">
+  <link rel="stylesheet" href="styles.css?v=1.0.8">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -53,7 +53,7 @@
         <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
           <span>CareerFlow</span>
           <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-            <i class="fa-solid fa-sparkles text-[10px] text-pink-400"></i> Powered by Gemini AI
+            <i class="fa-solid fa-sparkles text-[10px] text-pink-400"></i> Gemini & Groq Llama 3 AI
           </span>
         </h1>
         <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Track Job Applications</p>
@@ -376,18 +376,18 @@
             <div>
               <h2 class="text-lg font-bold text-white flex items-center gap-2">
                 <span>Apply Faster Suite</span>
-                <span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-semibold">Gemini AI Engine</span>
+                <span class="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded-full font-semibold">Gemini + Groq Llama 3.3 AI</span>
               </h2>
               <p class="text-xs text-slate-300 mt-1 max-w-2xl">
-                Speed through job applications! Use 1-click clipboard snippets, auto-generate customized cover letters powered by Google Gemini AI, write cold recruiter outreach emails, and match requirements.
+                Speed through job applications! Use 1-click clipboard snippets, auto-generate customized cover letters powered by Google Gemini or Groq Llama 3 AI, write cold recruiter outreach emails, and match requirements.
               </p>
             </div>
           </div>
 
-          <!-- Gemini Key Badge / Button -->
+          <!-- AI Key Badge / Button -->
           <button onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/30 flex items-center gap-2 transition shadow">
             <i class="fa-solid fa-key text-pink-400"></i>
-            <span id="gemini-key-status-text">Gemini API Key: Configured</span>
+            <span id="gemini-key-status-text">AI Keys: Configured</span>
           </button>
         </div>
       </div>
@@ -469,14 +469,21 @@
           </div>
         </div>
 
-        <!-- Right Column: Gemini AI Cover Letter & Email Generator -->
+        <!-- Right Column: AI Cover Letter & Email Generator -->
         <div class="lg:col-span-7 space-y-4">
           <div class="glass-card p-5 rounded-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
-                <i class="fa-solid fa-sparkles text-pink-400"></i> Gemini AI Cover Letter & Email Writer
+                <i class="fa-solid fa-sparkles text-pink-400"></i> AI Cover Letter & Email Writer
               </h3>
-              <span class="text-[10px] uppercase font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Gemini 1.5 Flash</span>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-slate-400">Engine:</span>
+                <select id="ai-engine-choice" class="bg-slate-900 border border-slate-800 rounded text-[11px] text-purple-300 font-bold px-2 py-1 focus:outline-none">
+                  <option value="gemini" selected>Google Gemini AI</option>
+                  <option value="groq">Groq AI (Llama 3.3 70B - High Quota)</option>
+                  <option value="local">Local Instant Engine</option>
+                </select>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -703,14 +710,14 @@
     <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-800 p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <i class="fa-solid fa-id-card text-indigo-400"></i> Master Application Profile & Gemini Settings
+          <i class="fa-solid fa-id-card text-indigo-400"></i> Master Application Profile & AI Settings
         </h3>
         <button onclick="closeMasterProfileModal()" class="text-slate-400 hover:text-white text-lg p-1">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">Save your details and Google Gemini API key to generate intelligent, tailored cover letters!</p>
+      <p class="text-xs text-slate-400">Save your details and Google Gemini / Groq API key to generate intelligent, tailored cover letters!</p>
 
       <form id="form-profile" onsubmit="saveProfileForm(event)" class="space-y-4 text-xs">
         <!-- Gemini API Key Section -->
@@ -724,13 +731,31 @@
                 <i class="fa-solid fa-vial"></i> Test Key
               </button>
               <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
-                Get free key at Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                Get key at Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
               </a>
             </div>
           </div>
           <input type="password" id="prof-gemini-key" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-purple-500">
           <div id="gemini-test-result" class="text-[11px] hidden p-2 rounded-lg bg-slate-900 border border-slate-800 mt-2"></div>
-          <p class="text-[11px] text-slate-400">Your key is stored privately in your local browser storage.</p>
+        </div>
+
+        <!-- Groq API Key Section -->
+        <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-emerald-300 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt text-amber-400"></i> Groq AI API Key (Llama 3.3 70B - High Quota & Free)
+            </label>
+            <div class="flex items-center gap-3">
+              <button type="button" onclick="testGroqApiKey()" class="text-[11px] text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 px-2.5 py-0.5 rounded font-bold transition flex items-center gap-1">
+                <i class="fa-solid fa-vial"></i> Test Groq Key
+              </button>
+              <a href="https://console.groq.com/keys" target="_blank" class="text-[11px] text-amber-400 hover:underline flex items-center gap-1">
+                Get free key at console.groq.com <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
+            </div>
+          </div>
+          <input type="password" id="prof-groq-key" placeholder="gsk_..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+          <div id="groq-test-result" class="text-[11px] hidden p-2 rounded-lg bg-slate-900 border border-slate-800 mt-2"></div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -767,7 +792,7 @@
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
           <button type="button" onclick="closeMasterProfileModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200">Cancel</button>
-          <button type="submit" class="glow-btn px-5 py-2 rounded-xl font-bold text-white">Save Profile & API Key</button>
+          <button type="submit" class="glow-btn px-5 py-2 rounded-xl font-bold text-white">Save Profile & AI Keys</button>
         </div>
       </form>
     </div>
@@ -814,7 +839,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.0.7 -->
-  <script src="app.js?v=1.0.7"></script>
+  <!-- App Main JavaScript with Cache Busting v1.0.8 -->
+  <script src="app.js?v=1.0.8"></script>
 </body>
 </html>

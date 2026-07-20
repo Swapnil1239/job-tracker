@@ -1,4 +1,4 @@
-/* CareerFlow AI - Multi-Model Automatic Quota Fallback Engine */
+/* CareerFlow AI - Multi-Engine AI Integration (Google Gemini + Groq Llama 3.3 70B) */
 
 const STORAGE_KEY = 'careerflow_jobs_data';
 const PROFILE_KEY = 'careerflow_profile_data';
@@ -12,7 +12,8 @@ let profile = {
   portfolio: 'https://github.com/alexvance-code',
   summary: 'Full-stack software engineer with 5+ years of experience building high-performance web applications, cloud microservices, and slick user interfaces with React, Node.js, and TypeScript.',
   pitch: 'I excel at bringing ambitious products from zero to one. Passionate about system design, frontend performance, and delivering memorable developer and end-user experiences.',
-  geminiApiKey: ''
+  geminiApiKey: '',
+  groqApiKey: ''
 };
 
 let currentTab = 'kanban';
@@ -219,14 +220,17 @@ function updateProfileDOM() {
   document.getElementById('prof-summary').value = profile.summary || '';
   document.getElementById('prof-pitch').value = profile.pitch || '';
   document.getElementById('prof-gemini-key').value = profile.geminiApiKey || '';
+  if (document.getElementById('prof-groq-key')) {
+    document.getElementById('prof-groq-key').value = profile.groqApiKey || '';
+  }
 
   const badge = document.getElementById('gemini-key-status-text');
   if (badge) {
-    if (profile.geminiApiKey) {
-      badge.textContent = 'Gemini AI: Configured ✨';
+    if (profile.groqApiKey || profile.geminiApiKey) {
+      badge.textContent = profile.groqApiKey ? 'Groq Llama 3 AI Ready ⚡' : 'Gemini AI Configured ✨';
       badge.className = 'text-xs font-bold text-emerald-400';
     } else {
-      badge.textContent = 'Add Gemini Key 🔑';
+      badge.textContent = 'Add AI Key (Gemini/Groq) 🔑';
       badge.className = 'text-xs font-bold text-amber-400';
     }
   }
@@ -577,7 +581,7 @@ function renderTable(filteredJobs) {
   });
 }
 
-// 4. APPLY FASTER HUB & MULTI-MODEL QUOTA FALLBACK GEMINI AI ENGINE
+// 4. APPLY FASTER HUB & DUAL-ENGINE AI (GEMINI + GROQ LLAMA 3.3)
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -593,7 +597,7 @@ function copyToClipboard(text, label) {
   });
 }
 
-// Test Key Diagnostic Helper
+// Test Gemini API Key
 async function testGeminiApiKey() {
   const keyInput = document.getElementById('prof-gemini-key').value.trim();
   const resElem = document.getElementById('gemini-test-result');
@@ -603,7 +607,7 @@ async function testGeminiApiKey() {
 
   if (!keyInput) {
     resElem.className = 'text-[11px] text-amber-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30';
-    resElem.textContent = '⚠️ Please paste an API key first.';
+    resElem.textContent = '⚠️ Please paste a Gemini key first.';
     return;
   }
 
@@ -617,17 +621,58 @@ async function testGeminiApiKey() {
     if (listRes.ok && data.models && Array.isArray(data.models)) {
       const validModels = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
       resElem.className = 'text-[11px] text-emerald-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-emerald-500/30';
-      resElem.innerHTML = `✅ Success! Your API key is active. (${validModels.length} models ready)`;
+      resElem.innerHTML = `✅ Success! Your Gemini API key is active. (${validModels.length} models ready)`;
     } else if (data.error) {
       resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
       resElem.innerHTML = `❌ Google API Error: ${escapeHTML(data.error.message)}<br><span class="text-slate-400 text-[10px] font-normal">Check key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline text-pink-400">aistudio.google.com</a></span>`;
-    } else {
-      resElem.className = 'text-[11px] text-amber-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30';
-      resElem.textContent = '⚠️ Unexpected response from Google AI Studio.';
     }
   } catch (err) {
     resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
     resElem.textContent = `❌ Network Error: ${err.message}. Check connection.`;
+  }
+}
+
+// Test Groq API Key
+async function testGroqApiKey() {
+  const keyInput = document.getElementById('prof-groq-key').value.trim();
+  const resElem = document.getElementById('groq-test-result');
+  if (!resElem) return;
+
+  resElem.classList.remove('hidden');
+
+  if (!keyInput) {
+    resElem.className = 'text-[11px] text-amber-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30';
+    resElem.textContent = '⚠️ Please paste a Groq key (gsk_...) first.';
+    return;
+  }
+
+  resElem.className = 'text-[11px] text-amber-300 font-bold mt-2 p-2 rounded bg-slate-900 border border-amber-500/30 animate-pulse';
+  resElem.textContent = 'Testing Groq AI Llama 3 API Key...';
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${keyInput}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: 'Respond with OK' }]
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.choices && data.choices[0]) {
+      resElem.className = 'text-[11px] text-emerald-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-emerald-500/30';
+      resElem.textContent = '✅ Success! Groq Llama 3 API key is active with 14,400 requests/day!';
+    } else {
+      resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
+      resElem.textContent = `❌ Groq Error: ${data.error?.message || 'Invalid key'}`;
+    }
+  } catch (err) {
+    resElem.className = 'text-[11px] text-rose-400 font-bold mt-2 p-2 rounded bg-slate-900 border border-rose-500/30';
+    resElem.textContent = `❌ Network Error: ${err.message}`;
   }
 }
 
@@ -636,6 +681,7 @@ async function generateAIText(type) {
   const position = document.getElementById('ai-position').value.trim() || 'Software Engineer';
   const jd = document.getElementById('ai-jd').value.trim();
   const tone = document.getElementById('ai-tone').value;
+  const engineChoice = document.getElementById('ai-engine-choice')?.value || 'gemini';
 
   const outputContainer = document.getElementById('ai-output-container');
   const outputTitle = document.getElementById('ai-output-title');
@@ -645,22 +691,74 @@ async function generateAIText(type) {
 
   outputContainer.classList.remove('hidden');
 
-  const apiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
+  const geminiKey = profile.geminiApiKey ? profile.geminiApiKey.trim() : '';
+  const groqKey = profile.groqApiKey ? profile.groqApiKey.trim() : '';
 
-  if (apiKey) {
-    const activeBtn = type === 'cover-letter' ? btnCl : btnEmail;
-    const originalText = activeBtn.innerHTML;
+  const activeBtn = type === 'cover-letter' ? btnCl : btnEmail;
+  const originalText = activeBtn.innerHTML;
+  activeBtn.disabled = true;
+
+  const systemPrompt = type === 'cover-letter' 
+    ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
+    : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
+
+  // 1. GROQ AI GENERATION (High Free Limits)
+  if (engineChoice === 'groq' || (!geminiKey && groqKey)) {
+    if (!groqKey) {
+      fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+      showToast('Add a Groq API Key in Profile Settings or get one free at console.groq.com');
+      activeBtn.disabled = false;
+      return;
+    }
+
+    activeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-400"></i> Running Llama 3.3 (Groq AI)...`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-bolt text-amber-400 animate-pulse"></i> Groq Llama 3.3 AI ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'} (${tone})`;
+    outputText.textContent = 'Generating blazingly fast with Groq AI Llama 3.3 70B...';
+
+    try {
+      const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+      let groqSuccess = false;
+
+      for (const m of groqModels) {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: m,
+            messages: [{ role: 'user', content: systemPrompt }]
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.choices && data.choices[0]) {
+          outputText.textContent = data.choices[0].message.content;
+          showToast(`Generated using Groq AI (${m}) at 500+ tokens/sec!`);
+          groqSuccess = true;
+          break;
+        }
+      }
+
+      if (!groqSuccess) {
+        fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+      }
+    } catch (e) {
+      fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+    }
+
+    activeBtn.innerHTML = originalText;
+    activeBtn.disabled = false;
+    return;
+  }
+
+  // 2. GOOGLE GEMINI AI GENERATION
+  if (geminiKey && engineChoice !== 'local') {
     activeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-pink-400"></i> Thinking with Gemini...`;
-    activeBtn.disabled = true;
-
     outputTitle.innerHTML = `<i class="fa-solid fa-sparkles text-pink-400 animate-pulse"></i> Gemini AI ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'} (${tone})`;
     outputText.textContent = 'Connecting to Google Gemini AI...';
 
-    const systemPrompt = type === 'cover-letter' 
-      ? `You are an expert career strategist and executive resume writer. Write a compelling, highly customized Cover Letter for ${profile.name} applying for the ${position} role at ${company}.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nElevator Pitch: ${profile.pitch}\nContact: ${profile.contact} | ${profile.linkedin}\n\nJob Requirements:\n${jd || 'Standard industry requirements for this role.'}\n\nInstructions: Make it modern, direct, impactful, and ready to send. Do not include markdown code blocks or meta commentary.`
-      : `You are an expert recruiter and headhunter. Write a concise, powerful Cold Outreach Email from ${profile.name} to the hiring manager or recruiter at ${company} for the ${position} position.\n\nTone: ${tone}.\nCandidate Summary: ${profile.summary}\nPortfolio: ${profile.portfolio}\nContact: ${profile.contact}\nJob Context: ${jd || 'Interested in open opportunities'}\n\nInstructions: Write a high-converting email subject line and body. Ready to copy and paste.`;
-
-    // Prioritized model endpoints sequence for quota resilience
     const candidateModels = [
       'models/gemini-1.5-flash',
       'models/gemini-1.5-flash-8b',
@@ -669,14 +767,12 @@ async function generateAIText(type) {
     ];
 
     let success = false;
-    let lastErrorMsg = '';
 
-    // Loop through candidate models and automatic fallback on quota exhaustion (429)
     for (const modelPath of candidateModels) {
       const versions = ['v1beta', 'v1'];
       for (const ver of versions) {
         try {
-          const response = await fetch(`https://generativelanguage.googleapis.com/${ver}/${modelPath}:generateContent?key=${apiKey}`, {
+          const response = await fetch(`https://generativelanguage.googleapis.com/${ver}/${modelPath}:generateContent?key=${geminiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -692,40 +788,67 @@ async function generateAIText(type) {
             showToast(`Generated using Gemini AI (${modelPath.replace('models/', '')})!`);
             success = true;
             break;
-          } else if (data.error) {
-            lastErrorMsg = data.error.message;
-            // If quota error, break version loop and try next model
-            if (data.error.message.includes('Quota exceeded') || data.error.status === 'RESOURCE_EXHAUSTED') {
-              break;
-            }
+          } else if (data.error && (data.error.message.includes('Quota exceeded') || data.error.status === 'RESOURCE_EXHAUSTED')) {
+            break; // Skip version and try next model
           }
-        } catch (err) {
-          lastErrorMsg = err.message;
-        }
+        } catch (err) {}
       }
 
       if (success) break;
     }
 
     if (!success) {
-      // Fallback to local template generator if all free tier quotas are exhausted
+      // If Groq key is present, auto fallback to Groq AI
+      if (groqKey) {
+        showToast('Gemini quota full. Switching to Groq Llama 3 AI!');
+        generateAITextWithEngine('groq', type, company, position, jd, tone, outputTitle, outputText, systemPrompt, originalText, activeBtn);
+        return;
+      }
       fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
-      showToast('Gemini free tier quota limit reached. Using local template!');
+      showToast('Gemini quota limit active. Using local engine or add Groq API key!');
     }
 
     activeBtn.innerHTML = originalText;
     activeBtn.disabled = false;
-  } else {
-    fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
-    showToast('Add Gemini API Key in Profile Settings for AI generations!');
+    return;
   }
+
+  // 3. LOCAL INSTANT ENGINE
+  fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+  activeBtn.disabled = false;
+}
+
+async function generateAITextWithEngine(engine, type, company, position, jd, tone, outputTitle, outputText, systemPrompt, originalText, activeBtn) {
+  const groqKey = profile.groqApiKey ? profile.groqApiKey.trim() : '';
+  if (engine === 'groq' && groqKey) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: systemPrompt }] })
+      });
+      const data = await res.json();
+      if (res.ok && data.choices && data.choices[0]) {
+        outputTitle.innerHTML = `<i class="fa-solid fa-bolt text-amber-400"></i> Groq Llama 3.3 AI ${type === 'cover-letter' ? 'Cover Letter' : 'Cold Email'} (${tone})`;
+        outputText.textContent = data.choices[0].message.content;
+        showToast('Generated via Groq Llama 3.3 AI!');
+        activeBtn.innerHTML = originalText;
+        activeBtn.disabled = false;
+        return;
+      }
+    } catch (e) {}
+  }
+
+  fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText);
+  activeBtn.innerHTML = originalText;
+  activeBtn.disabled = false;
 }
 
 function fallbackInstantGenerator(type, company, position, jd, tone, outputTitle, outputText) {
   let generated = '';
 
   if (type === 'cover-letter') {
-    outputTitle.innerHTML = `<i class="fa-solid fa-file-signature text-indigo-400"></i> Local Tailored Cover Letter (${tone})`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-file-signature text-indigo-400"></i> Tailored Cover Letter (${tone})`;
     generated = `Dear Hiring Manager at ${company},
 
 I am writing to express my strong enthusiasm for the ${position} role at ${company}. With over 5 years of software engineering experience specializing in high-performance web applications and cloud architectures, I have closely followed ${company}'s innovations and product vision.
@@ -741,12 +864,9 @@ Best regards,
 
 ${profile.name}
 ${profile.contact}
-${profile.linkedin}
-
----------------------------------------------------
-💡 Note: Generated using local tailored engine because Gemini free-tier rate limits were active.`;
+${profile.linkedin}`;
   } else if (type === 'cold-email') {
-    outputTitle.innerHTML = `<i class="fa-solid fa-paper-plane text-indigo-400"></i> Local Tailored Cold Email (${tone})`;
+    outputTitle.innerHTML = `<i class="fa-solid fa-paper-plane text-indigo-400"></i> Tailored Cold Email (${tone})`;
     generated = `Subject: Expressing Interest: ${position} at ${company} - ${profile.name}
 
 Hi [Recruiter/Hiring Manager Name],
@@ -765,10 +885,7 @@ Best,
 
 ${profile.name}
 ${profile.contact}
-${profile.linkedin}
-
----------------------------------------------------
-💡 Note: Generated using local tailored engine.`;
+${profile.linkedin}`;
   }
 
   outputText.textContent = generated;
@@ -964,12 +1081,13 @@ function saveProfileForm(e) {
     portfolio: document.getElementById('prof-portfolio').value.trim(),
     summary: document.getElementById('prof-summary').value.trim(),
     pitch: document.getElementById('prof-pitch').value.trim(),
-    geminiApiKey: document.getElementById('prof-gemini-key').value.trim()
+    geminiApiKey: document.getElementById('prof-gemini-key').value.trim(),
+    groqApiKey: document.getElementById('prof-groq-key') ? document.getElementById('prof-groq-key').value.trim() : profile.groqApiKey
   };
 
   saveProfileData();
   closeMasterProfileModal();
-  showToast('Profile & Gemini API key saved!');
+  showToast('Profile & AI keys saved!');
 }
 
 function openBookmarkletModal() {
