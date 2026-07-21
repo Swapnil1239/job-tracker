@@ -177,8 +177,8 @@ async function syncDataToBackend() {
 
 // Supabase Cloud Synchronizer
 async function pushToSupabase() {
-  const url = profile.supabaseUrl.trim().replace(/\/$/, "");
-  const key = profile.supabaseKey.trim();
+  const url = (profile.supabaseUrl || "").trim().replace(/\/$/, "");
+  const key = (profile.supabaseKey || "").trim();
   const statusPill = document.getElementById('cloud-status-pill');
   const syncBtn = document.getElementById('btn-cloud-sync');
 
@@ -202,22 +202,22 @@ async function pushToSupabase() {
         id: 'user_state',
         jobs: jobs,
         profile: {
-          name: profile.name,
-          contact: profile.contact,
-          linkedin: profile.linkedin,
-          portfolio: profile.portfolio,
-          summary: profile.summary,
-          pitch: profile.pitch,
-          eduDegree: profile.eduDegree,
-          eduSchool: profile.eduSchool,
-          eduYear: profile.eduYear,
-          workTitle: profile.workTitle,
-          workBullets: profile.workBullets,
-          achievements: profile.achievements,
-          geminiApiKey: profile.geminiApiKey,
-          groqApiKey: profile.groqApiKey,
-          supabaseUrl: profile.supabaseUrl,
-          supabaseKey: profile.supabaseKey
+          name: profile.name || '',
+          contact: profile.contact || '',
+          linkedin: profile.linkedin || '',
+          portfolio: profile.portfolio || '',
+          summary: profile.summary || '',
+          pitch: profile.pitch || '',
+          eduDegree: profile.eduDegree || '',
+          eduSchool: profile.eduSchool || '',
+          eduYear: profile.eduYear || '',
+          workTitle: profile.workTitle || '',
+          workBullets: profile.workBullets || '',
+          achievements: profile.achievements || '',
+          geminiApiKey: profile.geminiApiKey || '',
+          groqApiKey: profile.groqApiKey || '',
+          supabaseUrl: profile.supabaseUrl || '',
+          supabaseKey: profile.supabaseKey || ''
         },
         updated_at: new Date().toISOString()
       })
@@ -234,15 +234,15 @@ async function pushToSupabase() {
     }
   } catch (err) {
     if (statusPill) {
-      statusPill.innerHTML = `<i class="fa-solid fa-cloud-warning text-[9px] text-rose-400"></i> Sync Error`;
+      statusPill.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[9px] text-rose-400"></i> Sync Error`;
       statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 flex items-center gap-1';
     }
   }
 }
 
 async function pullFromSupabase(isManualForce = false) {
-  const url = profile.supabaseUrl.trim().replace(/\/$/, "");
-  const key = profile.supabaseKey.trim();
+  const url = (profile.supabaseUrl || "").trim().replace(/\/$/, "");
+  const key = (profile.supabaseKey || "").trim();
   const statusPill = document.getElementById('cloud-status-pill');
   const syncBtn = document.getElementById('btn-cloud-sync');
 
@@ -292,7 +292,7 @@ async function pullFromSupabase(isManualForce = false) {
     }
   } catch (err) {
     if (statusPill) {
-      statusPill.innerHTML = `<i class="fa-solid fa-cloud-warning text-[9px] text-rose-400"></i> Offline / Error`;
+      statusPill.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[9px] text-rose-400"></i> Sync Error`;
       statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 flex items-center gap-1';
     }
   }
@@ -1430,319 +1430,4 @@ function isFollowUpDue(job) {
   const now = new Date();
   const diffDays = Math.floor((now - appliedDate) / (1000 * 60 * 60 * 24));
   return diffDays >= 7 && job.status === 'Applied';
-}
-
-// MODAL CONTROLLERS
-function openAddJobModal() {
-  document.getElementById('modal-job-title').innerHTML = `<i class="fa-solid fa-briefcase text-indigo-400"></i> Add New Job Application`;
-  document.getElementById('form-job').reset();
-  document.getElementById('job-id').value = '';
-  document.getElementById('job-date').value = new Date().toISOString().split('T')[0];
-  
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  document.getElementById('job-followup').value = nextWeek.toISOString().split('T')[0];
-
-  document.getElementById('modal-job').classList.remove('hidden');
-}
-
-function openEditJobModal(jobId) {
-  const job = jobs.find(j => j.id === jobId);
-  if (!job) return;
-
-  document.getElementById('modal-job-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-400"></i> Edit Job Application`;
-  document.getElementById('job-id').value = job.id;
-  document.getElementById('job-company').value = job.company || '';
-  document.getElementById('job-position').value = job.position || '';
-  document.getElementById('job-status').value = job.status || 'Applied';
-  document.getElementById('job-workmode').value = job.workMode || 'Remote';
-  document.getElementById('job-salary').value = job.salary || '';
-  document.getElementById('job-url').value = job.url || '';
-  document.getElementById('job-location').value = job.location || '';
-  document.getElementById('job-date').value = job.dateApplied || '';
-  document.getElementById('job-followup').value = job.followUpDate || '';
-  document.getElementById('job-contact').value = job.contact || '';
-  document.getElementById('job-notes').value = job.notes || '';
-
-  closeDetailModal();
-  document.getElementById('modal-job').classList.remove('hidden');
-}
-
-function closeJobModal() {
-  document.getElementById('modal-job').classList.add('hidden');
-}
-
-function saveJobForm(e) {
-  e.preventDefault();
-  const id = document.getElementById('job-id').value;
-
-  const jobData = {
-    id: id || `job_${Date.now()}`,
-    company: document.getElementById('job-company').value.trim(),
-    position: document.getElementById('job-position').value.trim(),
-    status: document.getElementById('job-status').value,
-    workMode: document.getElementById('job-workmode').value,
-    salary: document.getElementById('job-salary').value.trim(),
-    url: document.getElementById('job-url').value.trim(),
-    location: document.getElementById('job-location').value.trim(),
-    dateApplied: document.getElementById('job-date').value,
-    followUpDate: document.getElementById('job-followup').value,
-    contact: document.getElementById('job-contact').value.trim(),
-    notes: document.getElementById('job-notes').value.trim()
-  };
-
-  if (id) {
-    const idx = jobs.findIndex(j => j.id === id);
-    if (idx !== -1) jobs[idx] = jobData;
-  } else {
-    jobs.unshift(jobData);
-  }
-
-  saveJobsData();
-  closeJobModal();
-  showToast(`Saved application for ${jobData.company}!`);
-}
-
-function openJobDetailModal(jobId) {
-  const job = jobs.find(j => j.id === jobId);
-  if (!job) return;
-
-  document.getElementById('detail-company').textContent = job.company;
-  document.getElementById('detail-position').textContent = job.position;
-  
-  const badge = document.getElementById('detail-badge');
-  badge.textContent = job.status;
-  badge.className = `px-2.5 py-0.5 rounded-full text-xs font-semibold ${getBadgeClass(job.status)}`;
-
-  document.getElementById('detail-workmode').textContent = job.workMode || '-';
-  document.getElementById('detail-salary').textContent = job.salary || '-';
-  document.getElementById('detail-date').textContent = job.dateApplied || '-';
-  document.getElementById('detail-followup').textContent = job.followUpDate || '-';
-  
-  const urlElem = document.getElementById('detail-url');
-  const urlText = document.getElementById('detail-url-text');
-  if (job.url) {
-    urlElem.href = job.url;
-    urlText.textContent = job.url;
-    document.getElementById('detail-url-container').classList.remove('hidden');
-  } else {
-    document.getElementById('detail-url-container').classList.add('hidden');
-  }
-
-  const contactElem = document.getElementById('detail-contact');
-  if (job.contact) {
-    contactElem.textContent = job.contact;
-    document.getElementById('detail-contact-container').classList.remove('hidden');
-  } else {
-    document.getElementById('detail-contact-container').classList.add('hidden');
-  }
-
-  document.getElementById('detail-notes').textContent = job.notes || 'No extra notes specified.';
-
-  document.getElementById('btn-edit-job').onclick = () => openEditJobModal(job.id);
-  document.getElementById('btn-delete-job').onclick = () => deleteJob(job.id);
-  document.getElementById('btn-ai-generate-job').onclick = () => {
-    closeDetailModal();
-    switchTab('faster');
-    document.getElementById('ai-company').value = job.company;
-    document.getElementById('ai-position').value = job.position;
-    document.getElementById('ai-jd').value = job.notes;
-    document.getElementById('resume-jd-text').value = job.notes;
-    document.getElementById('resume-job-url').value = job.url || '';
-    generateAIText('cover-letter');
-  };
-
-  document.getElementById('modal-detail').classList.remove('hidden');
-}
-
-function closeDetailModal() {
-  document.getElementById('modal-detail').classList.add('hidden');
-}
-
-function deleteJob(jobId) {
-  const job = jobs.find(j => j.id === jobId);
-  if (confirm(`Are you sure you want to delete application for ${job ? job.company : 'this job'}?`)) {
-    jobs = jobs.filter(j => j.id !== jobId);
-    saveJobsData();
-    closeDetailModal();
-    showToast('Application deleted.');
-  }
-}
-
-function openMasterProfileModal(focusTargetId) {
-  updateProfileDOM();
-  const modal = document.getElementById('modal-profile');
-  if (modal) {
-    modal.classList.remove('hidden');
-    if (focusTargetId) {
-      setTimeout(() => {
-        const target = document.getElementById(focusTargetId);
-        if (target) {
-          target.focus();
-          target.select ? target.select() : null;
-        }
-      }, 100);
-    }
-  }
-}
-
-function closeMasterProfileModal() {
-  document.getElementById('modal-profile').classList.add('hidden');
-}
-
-function saveProfileForm(e) {
-  e.preventDefault();
-  profile = {
-    name: document.getElementById('prof-name').value.trim(),
-    contact: document.getElementById('prof-contact').value.trim(),
-    linkedin: document.getElementById('prof-linkedin').value.trim(),
-    portfolio: document.getElementById('prof-portfolio').value.trim(),
-    eduDegree: document.getElementById('prof-edu-degree') ? document.getElementById('prof-edu-degree').value.trim() : profile.eduDegree,
-    eduSchool: document.getElementById('prof-edu-school') ? document.getElementById('prof-edu-school').value.trim() : profile.eduSchool,
-    eduYear: document.getElementById('prof-edu-year') ? document.getElementById('prof-edu-year').value.trim() : profile.eduYear,
-    workTitle: document.getElementById('prof-work-title') ? document.getElementById('prof-work-title').value.trim() : profile.workTitle,
-    workBullets: document.getElementById('prof-work-bullets') ? document.getElementById('prof-work-bullets').value.trim() : profile.workBullets,
-    achievements: document.getElementById('prof-achievements') ? document.getElementById('prof-achievements').value.trim() : profile.achievements,
-    summary: document.getElementById('prof-summary').value.trim(),
-    pitch: document.getElementById('prof-pitch').value.trim(),
-    geminiApiKey: document.getElementById('prof-gemini-key').value.trim(),
-    groqApiKey: document.getElementById('prof-groq-key') ? document.getElementById('prof-groq-key').value.trim() : profile.groqApiKey,
-    supabaseUrl: document.getElementById('prof-supabase-url') ? document.getElementById('prof-supabase-url').value.trim() : profile.supabaseUrl,
-    supabaseKey: document.getElementById('prof-supabase-key') ? document.getElementById('prof-supabase-key').value.trim() : profile.supabaseKey
-  };
-
-  saveProfileData();
-  closeMasterProfileModal();
-  renderLiveResumePreview();
-  showToast('Saved Master Profile & Career Data!');
-}
-
-function openBookmarkletModal() {
-  document.getElementById('modal-bookmarklet').classList.remove('hidden');
-}
-
-function closeBookmarkletModal() {
-  document.getElementById('modal-bookmarklet').classList.add('hidden');
-}
-
-function checkFollowUpReminders() {
-  const urgentJobs = jobs.filter(j => isFollowUpDue(j));
-  const banner = document.getElementById('action-reminders-banner');
-  const text = document.getElementById('reminder-text');
-
-  if (urgentJobs.length > 0 && banner && text) {
-    banner.classList.remove('hidden');
-    text.textContent = `You have ${urgentJobs.length} application(s) (e.g. ${urgentJobs[0].company}) requiring follow-up action.`;
-  } else if (banner) {
-    banner.classList.add('hidden');
-  }
-}
-
-function filterFollowUps() {
-  currentSearch = '';
-  const searchInput = document.getElementById('global-search');
-  if (searchInput) searchInput.value = '';
-  switchTab('kanban');
-  showToast('Highlighting applications due for follow-up!');
-}
-
-function updateBookmarkletSnippet() {
-  const bookmarkletCode = `javascript:(function(){
-    var title = document.title || '';
-    var company = prompt('Extracting job application details.\\nConfirm Company Name:', title.split('|')[0].trim());
-    if(company){
-      alert('Job clipped for CareerFlow! Open CareerFlow App and click "Add Job" to save.');
-    }
-  })();`;
-
-  const codeArea = document.getElementById('bookmarklet-code');
-  if (codeArea) codeArea.value = bookmarkletCode.replace(/\s+/g, ' ');
-}
-
-function copyBookmarkletCode() {
-  const codeArea = document.getElementById('bookmarklet-code');
-  if (codeArea) {
-    copyToClipboard(codeArea.value, 'Bookmarklet Script');
-  }
-}
-
-function exportDataJSON() {
-  const exportPayload = {
-    app: 'CareerFlow AI',
-    version: '1.0',
-    exportDate: new Date().toISOString(),
-    profile,
-    jobs
-  };
-
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `CareerFlow_JobApplications_${new Date().toISOString().split('T')[0]}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-
-  showToast('Exported job records backup to JSON!');
-}
-
-function importDataJSON(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.jobs && Array.isArray(data.jobs)) {
-        jobs = data.jobs;
-        if (data.profile) profile = { ...profile, ...data.profile };
-        saveJobsData();
-        saveProfileData();
-        showToast(`Successfully imported ${jobs.length} applications!`);
-      } else {
-        alert("Invalid backup file structure.");
-      }
-    } catch (err) {
-      alert("Error parsing JSON file.");
-    }
-  };
-  reader.readAsText(file);
-}
-
-function getBadgeClass(status) {
-  switch (status) {
-    case 'Wishlist': return 'badge-wishlist';
-    case 'Applied': return 'badge-applied';
-    case 'Screening': return 'badge-screening';
-    case 'Interviewing': return 'badge-interview';
-    case 'Offered': return 'badge-offer';
-    case 'Rejected': return 'badge-rejected';
-    default: return 'badge-wishlist';
-  }
-}
-
-function showToast(message) {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  toast.className = 'toast py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-100 flex items-center gap-2 shadow-lg';
-  toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>${escapeHTML(message)}</span>`;
-
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(100%)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-function escapeHTML(str) {
-  if (!str) return '';
-  return str.replace(/[&<>'"]/g, 
-    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-  );
 }
