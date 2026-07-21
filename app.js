@@ -246,7 +246,7 @@ async function pullFromSupabase(isManualForce = false) {
   const statusPill = document.getElementById('cloud-status-pill');
   const syncBtn = document.getElementById('btn-cloud-sync');
 
-  if (!url || !key) return;
+  if (!url || !key) return false;
 
   if (statusPill) {
     statusPill.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[9px]"></i> Fetching...`;
@@ -283,9 +283,11 @@ async function pullFromSupabase(isManualForce = false) {
         }
         if (syncBtn) syncBtn.classList.remove('hidden');
         if (isManualForce) showToast('Cloud database synchronized successfully!');
+        return true;
       } else {
         // Table exists but is empty, upload initial state
         await pushToSupabase();
+        return true;
       }
     } else {
       throw new Error('Pull failed');
@@ -295,6 +297,7 @@ async function pullFromSupabase(isManualForce = false) {
       statusPill.innerHTML = `<i class="fa-solid fa-cloud-warning text-[9px] text-rose-400"></i> Offline / Error`;
       statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 flex items-center gap-1';
     }
+    return false;
   }
 }
 
@@ -1590,8 +1593,15 @@ function closeMasterProfileModal() {
   document.getElementById('modal-profile').classList.add('hidden');
 }
 
-function saveProfileForm(e) {
+async function saveProfileForm(e) {
   e.preventDefault();
+
+  const oldUrl = profile.supabaseUrl || '';
+  const oldKey = profile.supabaseKey || '';
+
+  const newUrl = document.getElementById('prof-supabase-url') ? document.getElementById('prof-supabase-url').value.trim() : (profile.supabaseUrl || '');
+  const newKey = document.getElementById('prof-supabase-key') ? document.getElementById('prof-supabase-key').value.trim() : (profile.supabaseKey || '');
+
   profile = {
     name: document.getElementById('prof-name').value.trim(),
     contact: document.getElementById('prof-contact').value.trim(),
@@ -1607,9 +1617,19 @@ function saveProfileForm(e) {
     pitch: document.getElementById('prof-pitch').value.trim(),
     geminiApiKey: document.getElementById('prof-gemini-key').value.trim(),
     groqApiKey: document.getElementById('prof-groq-key') ? document.getElementById('prof-groq-key').value.trim() : profile.groqApiKey,
-    supabaseUrl: document.getElementById('prof-supabase-url') ? document.getElementById('prof-supabase-url').value.trim() : profile.supabaseUrl,
-    supabaseKey: document.getElementById('prof-supabase-key') ? document.getElementById('prof-supabase-key').value.trim() : profile.supabaseKey
+    supabaseUrl: newUrl,
+    supabaseKey: newKey
   };
+
+  // If we just added or changed sync credentials, perform a pull first to prevent overwriting cloud state with empty defaults
+  if (newUrl && newKey && (newUrl !== oldUrl || newKey !== oldKey)) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    const pulled = await pullFromSupabase(true);
+    if (pulled) {
+      closeMasterProfileModal();
+      return;
+    }
+  }
 
   saveProfileData();
   closeMasterProfileModal();
