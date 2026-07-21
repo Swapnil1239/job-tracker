@@ -38,7 +38,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.6.0">
+  <link rel="stylesheet" href="styles.css?v=1.7.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -52,8 +52,8 @@
       <div>
         <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
           <span>CareerFlow</span>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-            <i class="fa-solid fa-graduation-cap text-[10px] text-emerald-400"></i> Master Career Bank
+          <span id="cloud-status-pill" class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/20 flex items-center gap-1">
+            <i class="fa-solid fa-cloud-slash text-[9px]"></i> Local Mode
           </span>
         </h1>
         <p class="text-xs text-slate-400 font-medium">Apply 5x Faster & Export 95%+ ATS Vector PDF Resumes</p>
@@ -75,6 +75,10 @@
 
     <!-- Quick Action Buttons -->
     <div class="flex items-center gap-2.5">
+      <button id="btn-cloud-sync" onclick="pullFromSupabase(true)" class="hidden p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-indigo-400 transition" title="Force Cloud Sync">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+
       <button id="btn-quick-copy" onclick="openMasterProfileModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border border-indigo-400/40 flex items-center gap-2 transition-all hover:scale-[1.02] shadow-lg">
         <i class="fa-solid fa-user-pen"></i>
         <span>Edit Profile & Experience</span>
@@ -809,10 +813,45 @@
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">Edit your full name, contact, education, work experience, and achievements below. Click <strong>Save Master Profile Data</strong> when done!</p>
+      <p class="text-xs text-slate-400">Edit your full name, contact, education, work experience, achievements, and Supabase cloud sync keys below.</p>
 
       <form id="form-profile" onsubmit="saveProfileForm(event)" class="space-y-4 text-xs">
         
+        <!-- SUPABASE CLOUD DATABASE SYNC SETTINGS -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-indigo-500/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-extrabold text-indigo-400 text-xs uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-cloud"></i> Supabase Cloud Database Sync Settings
+            </h4>
+            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded font-bold">Free Sync across PC & Mobile</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Supabase Project URL</label>
+              <input type="text" id="prof-supabase-url" placeholder="https://yourproject.supabase.co" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Supabase Anon API Key</label>
+              <input type="password" id="prof-supabase-key" placeholder="eyJhbGciOi..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[10px] text-slate-400 space-y-1">
+            <span class="font-bold text-slate-300 block">💡 1-Minute Free Setup:</span>
+            <p>1. Create a free project at <a href="https://supabase.com" target="_blank" class="underline text-indigo-400">supabase.com</a>.</p>
+            <p>2. Open the **SQL Editor**, paste the code below, and click **Run**:</p>
+            <pre class="bg-slate-900 p-2 rounded text-slate-300 select-all overflow-x-auto my-1 font-mono">create table if not exists careerflow_data (
+  id text primary key,
+  jobs jsonb,
+  profile jsonb,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+alter table careerflow_data disable row level security;</pre>
+            <p>3. Copy your project **URL** and **Anon API Key** from Settings $\rightarrow$ API, paste them here, and save!</p>
+          </div>
+        </div>
+
         <!-- API KEYS SECTION -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Gemini API Key Section -->
@@ -889,7 +928,7 @@
         </div>
 
         <!-- WORK HISTORY SECTION -->
-        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3">
           <h4 class="font-extrabold text-indigo-400 text-xs uppercase tracking-wider flex items-center gap-2">
             <i class="fa-solid fa-briefcase"></i> Key Work Experience & Job History
           </h4>
@@ -970,7 +1009,7 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.6.0 -->
-  <script src="app.js?v=1.6.0"></script>
+  <!-- App Main JavaScript with Cache Busting v1.7.0 -->
+  <script src="app.js?v=1.7.0"></script>
 </body>
 </html>

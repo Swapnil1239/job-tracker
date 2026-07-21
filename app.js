@@ -19,7 +19,9 @@ let profile = {
   workBullets: '• Engineered responsive web applications and REST APIs serving 500k+ monthly active users.\n• Reduced core application render latency by 40% with client state optimization and code splitting.\n• Mentored junior engineers and led agile cross-functional sprint reviews.',
   achievements: 'AWS Certified Solutions Architect | 1st Place Hackathon Winner | Developer of the Year 2025',
   geminiApiKey: '',
-  groqApiKey: ''
+  groqApiKey: '',
+  supabaseUrl: '',
+  supabaseKey: ''
 };
 
 let currentTab = 'kanban';
@@ -139,29 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // State Persistence & Synchronization
 async function loadDataFromBackend() {
-  try {
-    const res = await fetch('/api/data');
-    if (res.ok) {
-      const data = await res.json();
-      if (data.jobs && Array.isArray(data.jobs)) {
-        jobs = data.jobs;
-      } else {
-        jobs = [...DEFAULT_JOBS];
-      }
-      if (data.profile) {
-        profile = { ...profile, ...data.profile };
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-    } else {
-      loadStoredDataLocalOnly();
-    }
-  } catch (e) {
-    loadStoredDataLocalOnly();
-  }
-
+  loadStoredDataLocalOnly();
   updateProfileDOM();
   renderCurrentView();
+
+  // Try to sync with Supabase if credentials exist
+  if (profile.supabaseUrl && profile.supabaseKey) {
+    await pullFromSupabase(false);
+  }
 }
 
 function loadStoredDataLocalOnly() {
@@ -183,14 +170,131 @@ async function syncDataToBackend() {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   renderCurrentView();
 
+  if (profile.supabaseUrl && profile.supabaseKey) {
+    await pushToSupabase();
+  }
+}
+
+// Supabase Cloud Synchronizer
+async function pushToSupabase() {
+  const url = profile.supabaseUrl.trim().replace(/\/$/, "");
+  const key = profile.supabaseKey.trim();
+  const statusPill = document.getElementById('cloud-status-pill');
+  const syncBtn = document.getElementById('btn-cloud-sync');
+
+  if (!url || !key) return;
+
+  if (statusPill) {
+    statusPill.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[9px]"></i> Syncing...`;
+    statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 flex items-center gap-1';
+  }
+
   try {
-    await fetch('/api/data', {
+    const response = await fetch(`${url}/rest/v1/careerflow_data`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobs, profile })
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        id: 'user_state',
+        jobs: jobs,
+        profile: {
+          name: profile.name,
+          contact: profile.contact,
+          linkedin: profile.linkedin,
+          portfolio: profile.portfolio,
+          summary: profile.summary,
+          pitch: profile.pitch,
+          eduDegree: profile.eduDegree,
+          eduSchool: profile.eduSchool,
+          eduYear: profile.eduYear,
+          workTitle: profile.workTitle,
+          workBullets: profile.workBullets,
+          achievements: profile.achievements,
+          geminiApiKey: profile.geminiApiKey,
+          groqApiKey: profile.groqApiKey,
+          supabaseUrl: profile.supabaseUrl,
+          supabaseKey: profile.supabaseKey
+        },
+        updated_at: new Date().toISOString()
+      })
     });
+
+    if (response.ok) {
+      if (statusPill) {
+        statusPill.innerHTML = `<i class="fa-solid fa-cloud text-[9px] text-emerald-400"></i> Cloud Synced`;
+        statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 flex items-center gap-1';
+      }
+      if (syncBtn) syncBtn.classList.remove('hidden');
+    } else {
+      throw new Error('Supabase response not OK');
+    }
   } catch (err) {
-    console.warn('Offline mode: Saved locally in browser.');
+    if (statusPill) {
+      statusPill.innerHTML = `<i class="fa-solid fa-cloud-warning text-[9px] text-rose-400"></i> Sync Error`;
+      statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 flex items-center gap-1';
+    }
+  }
+}
+
+async function pullFromSupabase(isManualForce = false) {
+  const url = profile.supabaseUrl.trim().replace(/\/$/, "");
+  const key = profile.supabaseKey.trim();
+  const statusPill = document.getElementById('cloud-status-pill');
+  const syncBtn = document.getElementById('btn-cloud-sync');
+
+  if (!url || !key) return;
+
+  if (statusPill) {
+    statusPill.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[9px]"></i> Fetching...`;
+  }
+
+  try {
+    const response = await fetch(`${url}/rest/v1/careerflow_data?id=eq.user_state&select=*`, {
+      method: 'GET',
+      headers: {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`
+      }
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result && result.length > 0) {
+        const cloudData = result[0];
+        
+        // Merge cloud data to local state
+        if (cloudData.jobs) jobs = cloudData.jobs;
+        if (cloudData.profile) profile = { ...profile, ...cloudData.profile };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+
+        updateProfileDOM();
+        renderCurrentView();
+        renderLiveResumePreview();
+
+        if (statusPill) {
+          statusPill.innerHTML = `<i class="fa-solid fa-cloud text-[9px] text-emerald-400"></i> Cloud Connected`;
+          statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 flex items-center gap-1';
+        }
+        if (syncBtn) syncBtn.classList.remove('hidden');
+        if (isManualForce) showToast('Cloud database synchronized successfully!');
+      } else {
+        // Table exists but is empty, upload initial state
+        await pushToSupabase();
+      }
+    } else {
+      throw new Error('Pull failed');
+    }
+  } catch (err) {
+    if (statusPill) {
+      statusPill.innerHTML = `<i class="fa-solid fa-cloud-warning text-[9px] text-rose-400"></i> Offline / Error`;
+      statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 flex items-center gap-1';
+    }
   }
 }
 
@@ -245,6 +349,10 @@ function updateProfileDOM() {
     document.getElementById('prof-groq-key').value = profile.groqApiKey || '';
   }
 
+  // Supabase DOM values
+  if (document.getElementById('prof-supabase-url')) document.getElementById('prof-supabase-url').value = profile.supabaseUrl || '';
+  if (document.getElementById('prof-supabase-key')) document.getElementById('prof-supabase-key').value = profile.supabaseKey || '';
+
   const badge = document.getElementById('gemini-key-status-text');
   if (badge) {
     if (profile.groqApiKey || profile.geminiApiKey) {
@@ -253,6 +361,21 @@ function updateProfileDOM() {
     } else {
       badge.textContent = 'Add AI Key (Gemini/Groq) 🔑';
       badge.className = 'text-xs font-bold text-amber-400';
+    }
+  }
+
+  // Update cloud status header indicator
+  const statusPill = document.getElementById('cloud-status-pill');
+  const syncBtn = document.getElementById('btn-cloud-sync');
+  if (statusPill) {
+    if (profile.supabaseUrl && profile.supabaseKey) {
+      statusPill.innerHTML = `<i class="fa-solid fa-cloud text-[9px] text-emerald-400"></i> Cloud Enabled`;
+      statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 flex items-center gap-1';
+      if (syncBtn) syncBtn.classList.remove('hidden');
+    } else {
+      statusPill.innerHTML = `<i class="fa-solid fa-cloud-slash text-[9px]"></i> Local Mode`;
+      statusPill.className = 'text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/20 flex items-center gap-1';
+      if (syncBtn) syncBtn.classList.add('hidden');
     }
   }
 }
@@ -1309,27 +1432,6 @@ function isFollowUpDue(job) {
   return diffDays >= 7 && job.status === 'Applied';
 }
 
-function checkFollowUpReminders() {
-  const urgentJobs = jobs.filter(j => isFollowUpDue(j));
-  const banner = document.getElementById('action-reminders-banner');
-  const text = document.getElementById('reminder-text');
-
-  if (urgentJobs.length > 0 && banner && text) {
-    banner.classList.remove('hidden');
-    text.textContent = `You have ${urgentJobs.length} application(s) (e.g. ${urgentJobs[0].company}) requiring follow-up action.`;
-  } else if (banner) {
-    banner.classList.add('hidden');
-  }
-}
-
-function filterFollowUps() {
-  currentSearch = '';
-  const searchInput = document.getElementById('global-search');
-  if (searchInput) searchInput.value = '';
-  switchTab('kanban');
-  showToast('Highlighting applications due for follow-up!');
-}
-
 // MODAL CONTROLLERS
 function openAddJobModal() {
   document.getElementById('modal-job-title').innerHTML = `<i class="fa-solid fa-briefcase text-indigo-400"></i> Add New Job Application`;
@@ -1504,7 +1606,9 @@ function saveProfileForm(e) {
     summary: document.getElementById('prof-summary').value.trim(),
     pitch: document.getElementById('prof-pitch').value.trim(),
     geminiApiKey: document.getElementById('prof-gemini-key').value.trim(),
-    groqApiKey: document.getElementById('prof-groq-key') ? document.getElementById('prof-groq-key').value.trim() : profile.groqApiKey
+    groqApiKey: document.getElementById('prof-groq-key') ? document.getElementById('prof-groq-key').value.trim() : profile.groqApiKey,
+    supabaseUrl: document.getElementById('prof-supabase-url') ? document.getElementById('prof-supabase-url').value.trim() : profile.supabaseUrl,
+    supabaseKey: document.getElementById('prof-supabase-key') ? document.getElementById('prof-supabase-key').value.trim() : profile.supabaseKey
   };
 
   saveProfileData();
@@ -1519,6 +1623,27 @@ function openBookmarkletModal() {
 
 function closeBookmarkletModal() {
   document.getElementById('modal-bookmarklet').classList.add('hidden');
+}
+
+function checkFollowUpReminders() {
+  const urgentJobs = jobs.filter(j => isFollowUpDue(j));
+  const banner = document.getElementById('action-reminders-banner');
+  const text = document.getElementById('reminder-text');
+
+  if (urgentJobs.length > 0 && banner && text) {
+    banner.classList.remove('hidden');
+    text.textContent = `You have ${urgentJobs.length} application(s) (e.g. ${urgentJobs[0].company}) requiring follow-up action.`;
+  } else if (banner) {
+    banner.classList.add('hidden');
+  }
+}
+
+function filterFollowUps() {
+  currentSearch = '';
+  const searchInput = document.getElementById('global-search');
+  if (searchInput) searchInput.value = '';
+  switchTab('kanban');
+  showToast('Highlighting applications due for follow-up!');
 }
 
 function updateBookmarkletSnippet() {
