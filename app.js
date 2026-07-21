@@ -190,7 +190,7 @@ async function pushToSupabase() {
   }
 
   try {
-    const response = await fetch(`${url}/rest/v1/careerflow_data`, {
+    const response = await fetch(`${url}/rest/v1/careerflow_data?on_conflict=id`, {
       method: 'POST',
       headers: {
         'apikey': key,
