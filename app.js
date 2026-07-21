@@ -757,7 +757,15 @@ function renderLiveResumePreview(customData) {
   const container = document.getElementById('pdf-export-container');
   const formatChoice = document.getElementById('resume-format-choice')?.value || 'ats-clean';
 
-  if (!container) return;
+  // Clean up role title and pull dates dynamically to right-align them
+  let roleTitle = profile.workTitle || 'Senior Full Stack Software Engineer at TechScale Solutions';
+  let workPeriod = '2023 – Present';
+  const dateRegex = /\(([^)]*(?:\d{4}|\bPresent\b)[^)]*)\)$/i;
+  const dateMatch = roleTitle.match(dateRegex);
+  if (dateMatch) {
+    workPeriod = dateMatch[1].trim();
+    roleTitle = roleTitle.replace(dateRegex, '').trim();
+  }
 
   const data = customData || activeResumeData || {
     name: profile.name || 'Alex Vance',
@@ -770,7 +778,7 @@ function renderLiveResumePreview(customData) {
     education: {
       degree: profile.eduDegree || 'B.S. in Computer Science',
       school: profile.eduSchool || 'State University',
-      year: profile.eduYear || '2018 – 2022 | Honors Graduate'
+      year: profile.eduYear || '2018 – 2022'
     },
     achievements: profile.achievements || 'AWS Certified Solutions Architect | Developer of the Year 2025',
     skills: {
@@ -780,8 +788,8 @@ function renderLiveResumePreview(customData) {
     },
     experience: [
       {
-        role: profile.workTitle || 'Senior Full Stack Software Engineer at TechScale Solutions',
-        period: '2023 – Present',
+        role: roleTitle,
+        period: workPeriod,
         bullets: (profile.workBullets ? profile.workBullets.split('\n').filter(b => b.trim()) : [
           'Engineered responsive web applications and REST APIs serving 500k+ monthly active users.',
           'Reduced core application render latency by 40% with client state optimization and code splitting.',
@@ -1044,12 +1052,19 @@ function downloadResumePDF() {
       <title>Resume</title>
       ${styleTags}
       <style>
+        * {
+          box-sizing: border-box !important;
+        }
         @page {
           size: letter portrait;
           margin: 0; /* Hides browser default header (title) and footer (URL/date) */
         }
-        body {
+        html, body {
+          width: 100%;
           margin: 0;
+          padding: 0;
+        }
+        body {
           padding: 0.5in;
           background: white !important;
           color: black !important;
