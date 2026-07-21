@@ -1017,8 +1017,71 @@ function downloadResumePDF() {
   const element = document.getElementById('pdf-export-container');
   if (!element) return;
 
-  showToast('Opening Crisp Vector Print Engine (Save as PDF)...');
-  window.print();
+  showToast('Preparing crisp vector PDF...');
+
+  // Create temporary hidden iframe to isolate the print page and hide browser headers/footers
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+
+  // Gather stylesheet links and Google fonts to copy them into the iframe
+  let styleTags = '';
+  document.querySelectorAll('link[rel="stylesheet"], style').forEach(tag => {
+    styleTags += tag.outerHTML;
+  });
+
+  doc.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Resume</title>
+      ${styleTags}
+      <style>
+        @page {
+          size: letter portrait;
+          margin: 0; /* Hides browser default header (title) and footer (URL/date) */
+        }
+        body {
+          margin: 0;
+          padding: 0.5in;
+          background: white !important;
+          color: black !important;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+        #pdf-export-container {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-shadow: none !important;
+          border: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+      </style>
+    </head>
+    <body>
+      ${element.outerHTML}
+      <script>
+        window.onload = function() {
+          // Small timeout to ensure font assets are loaded in iframe context
+          setTimeout(function() {
+            window.print();
+            setTimeout(function() {
+              window.parent.document.body.removeChild(window.frameElement);
+            }, 100);
+          }, 300);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  doc.close();
 }
 
 // Overleaf / LaTeX Code Exporter
