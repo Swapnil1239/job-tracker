@@ -19,8 +19,16 @@ let profile = {
   eduResearch: 'IoT Wearables Research (designed low-power BLE sensor drivers for wearable health monitoring)',
   workTitle: 'Android app developer at Raja Software Labs (2022 - Present)',
   workBullets: '• Improved application performance by 30% and reduced redundant API overhead by 70% through optimized multi-threading strategies utilizing Coroutines and Flow, resulting in enhanced user experience for 50M+ users.\n• Spearheaded the end-to-end development of the Thermostat module, significantly enhancing user engagement and hardware-to-app interaction, and led Android OS version migration initiatives for Nest application modules to ensure seamless backward compatibility and security compliance.\n• Championed automated testing initiatives, scaling module test coverage from 50% to 90%+ using JUnit, Mockito, and Compose UI testing frameworks, and diagnosed and resolved critical race conditions and memory leaks within the Thermostat and Camera modules, dropping overall crash rates by 70%.',
-  projectTitle: 'CommonIntern (2020 - 2021)',
-  projectBullets: '• Built a Python script to automatically apply to jobs on Glassdoor using BeautifulSoup and Selenium.\n• Gained 500+ stars on GitHub and featured on Hackaday front page.',
+  projects: [
+    {
+      title: 'CommonIntern (2020 - 2021)',
+      bullets: '• Built a Python script to automatically apply to jobs on Glassdoor using BeautifulSoup and Selenium.\n• Gained 500+ stars on GitHub and featured on Hackaday front page.'
+    },
+    {
+      title: 'Minimal Icon Pack (Sept. 2020 - Nov. 2020)',
+      bullets: '• Designed and released 100+ minimal iOS and Android icons from scratch.\n• Marketed the product on YouTube and generated sales on Gumroad.'
+    }
+  ],
   achievements: 'Hilt & Clean Architecture Certification | Compose UI Testing Specialist',
   geminiApiKey: '',
   groqApiKey: '',
@@ -165,7 +173,12 @@ function loadStoredDataLocalOnly() {
 
   const savedProfile = localStorage.getItem(PROFILE_KEY);
   if (savedProfile) {
-    try { profile = { ...profile, ...JSON.parse(savedProfile) }; } catch (e) {}
+    try { 
+      profile = { ...profile, ...JSON.parse(savedProfile) }; 
+      if (!profile.projects && profile.projectTitle) {
+        profile.projects = [{ title: profile.projectTitle, bullets: profile.projectBullets }];
+      }
+    } catch (e) {}
   }
 }
 
@@ -219,8 +232,7 @@ async function pushToSupabase() {
           eduResearch: profile.eduResearch || '',
           workTitle: profile.workTitle || '',
           workBullets: profile.workBullets || '',
-          projectTitle: profile.projectTitle || '',
-          projectBullets: profile.projectBullets || '',
+          projects: profile.projects || [],
           achievements: profile.achievements || '',
           geminiApiKey: profile.geminiApiKey || '',
           groqApiKey: profile.groqApiKey || '',
@@ -276,7 +288,12 @@ async function pullFromSupabase(isManualForce = false) {
         
         // Merge cloud data to local state
         if (cloudData.jobs) jobs = cloudData.jobs;
-        if (cloudData.profile) profile = { ...profile, ...cloudData.profile };
+        if (cloudData.profile) {
+          profile = { ...profile, ...cloudData.profile };
+          if (!profile.projects && profile.projectTitle) {
+            profile.projects = [{ title: profile.projectTitle, bullets: profile.projectBullets }];
+          }
+        }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
         localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
@@ -326,6 +343,54 @@ function loadSampleData() {
   }
 }
 
+// Dynamic Projects Editor for Master Profile Modal
+function renderProfileProjectsEditor() {
+  const container = document.getElementById('profile-projects-list');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const projects = profile.projects || [];
+
+  projects.forEach((proj, idx) => {
+    const card = document.createElement('div');
+    card.className = 'p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 relative group';
+    card.innerHTML = `
+      <div class="flex justify-between items-center">
+        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Project #${idx + 1}</span>
+        <button type="button" onclick="removeProjectInputRow(${idx})" class="text-rose-400 hover:text-rose-300 text-[10px] font-bold flex items-center gap-0.5">
+          <i class="fa-solid fa-trash-can"></i> Delete
+        </button>
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-1">Project Name & Period</label>
+        <input type="text" value="${escapeHTML(proj.title || '')}" class="project-title-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-slate-200 focus:border-indigo-500 focus:outline-none text-xs">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-1">Project Details & Bullet Points</label>
+        <textarea rows="2" class="project-bullets-textarea w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 focus:border-indigo-500 focus:outline-none text-xs" placeholder="• Bullet 1...&#10;• Bullet 2...">${escapeHTML(proj.bullets || '')}</textarea>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  if (projects.length === 0) {
+    container.innerHTML = `<p class="text-[11px] text-slate-500 italic text-center py-2">No projects added yet. Click "Add Another Project" below.</p>`;
+  }
+}
+
+window.addProjectInputRow = function() {
+  if (!profile.projects) profile.projects = [];
+  profile.projects.push({ title: '', bullets: '' });
+  renderProfileProjectsEditor();
+};
+
+window.removeProjectInputRow = function(index) {
+  if (profile.projects && profile.projects[index] !== undefined) {
+    profile.projects.splice(index, 1);
+    renderProfileProjectsEditor();
+  }
+};
+
 // Profile DOM Binding
 function updateProfileDOM() {
   if (document.getElementById('snippet-name-val')) document.getElementById('snippet-name-val').textContent = profile.name || 'Your Name';
@@ -354,8 +419,7 @@ function updateProfileDOM() {
   if (document.getElementById('prof-work-title')) document.getElementById('prof-work-title').value = profile.workTitle || '';
   if (document.getElementById('prof-work-bullets')) document.getElementById('prof-work-bullets').value = profile.workBullets || '';
   
-  if (document.getElementById('prof-project-title')) document.getElementById('prof-project-title').value = profile.projectTitle || '';
-  if (document.getElementById('prof-project-bullets')) document.getElementById('prof-project-bullets').value = profile.projectBullets || '';
+  renderProfileProjectsEditor();
   
   if (document.getElementById('prof-achievements')) document.getElementById('prof-achievements').value = profile.achievements || '';
 
@@ -794,6 +858,7 @@ function renderLiveResumePreview(customData) {
       school: profile.eduSchool || 'SGGS IE&T , Nanded',
       year: profile.eduYear || '2017 – 2021'
     },
+    projects: profile.projects || [],
     achievements: profile.achievements || '',
     skills: {
       languages: 'Kotlin, Java, JavaScript',
@@ -893,17 +958,19 @@ function renderLiveResumePreview(customData) {
       </div>
 
       <!-- PROJECTS -->
-      ${profile.projectTitle ? `
+      ${(data.projects && data.projects.length > 0) ? `
       <div class="space-y-1">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Projects</h2>
-        <div class="space-y-0.5">
-          <div class="flex justify-between items-baseline text-[11px] font-bold text-slate-900">
-            <span>${escapeHTML(profile.projectTitle)}</span>
+        ${data.projects.map(proj => `
+          <div class="space-y-0.5 mt-1">
+            <div class="flex justify-between items-baseline text-[11px] font-bold text-slate-900">
+              <span>${escapeHTML(proj.title || '')}</span>
+            </div>
+            <ul class="list-disc list-inside text-[11px] text-slate-800 space-y-0.5 pl-1 leading-snug">
+              ${(Array.isArray(proj.bullets) ? proj.bullets : (proj.bullets || '').split('\n')).filter(b => b.trim()).map(b => `<li>${escapeHTML(b.replace(/^•\s*/, ''))}</li>`).join('')}
+            </ul>
           </div>
-          <ul class="list-disc list-inside text-[11px] text-slate-800 space-y-0.5 pl-1 leading-snug">
-            ${profile.projectBullets.split('\n').filter(b => b.trim()).map(b => `<li>${escapeHTML(b.replace(/^•\s*/, ''))}</li>`).join('')}
-          </ul>
-        </div>
+        `).join('')}
       </div>
       ` : ''}
 
@@ -1167,10 +1234,17 @@ function copyLaTeXCode() {
   const experienceSection = (d.experience && d.experience.length > 0 && d.experience[0].role) ? `\n%-----------EXPERIENCE-----------\n\\section{EXPERIENCE}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {${escapeLaTeX(companyName)}}{${escapeLaTeX(d.experience[0].period)}}\n      {${escapeLaTeX(roleTitle)}}{}\n      \\resumeItemListStart\n        ${d.experience[0].bullets.map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
 
   // Check active data for projects first, then fallback to profile
-  const projectTitle = (d.projects && d.projects.title) ? d.projects.title : (profile.projectTitle || '');
-  const projectBullets = (d.projects && d.projects.bullets) ? (Array.isArray(d.projects.bullets) ? d.projects.bullets.join('\n') : d.projects.bullets) : (profile.projectBullets || '');
-
-  const projectsSection = projectTitle ? `\n%-----------PROJECTS-----------\n\\section{PROJECTS}\n  \\resumeSubHeadingListStart\n    \\resumeProjectHeading\n      {\\textbf{${escapeLaTeX(projectTitle)}}}{}\n      \\resumeItemListStart\n        ${projectBullets.split('\n').filter(b => b.trim()).map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
+  const projectsList = d.projects || profile.projects || [];
+  let projectsSection = '';
+  if (projectsList.length > 0) {
+    projectsSection = `\n%-----------PROJECTS-----------\n\\section{PROJECTS}\n  \\resumeSubHeadingListStart\n`;
+    projectsList.forEach(proj => {
+      const projTitle = proj.title || '';
+      const projBullets = Array.isArray(proj.bullets) ? proj.bullets : (proj.bullets || '').split('\n');
+      projectsSection += `    \\resumeProjectHeading\n      {\\textbf{${escapeLaTeX(projTitle)}}}{}\n      \\resumeItemListStart\n        ${projBullets.filter(b => b.trim()).map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n`;
+    });
+    projectsSection += `  \\resumeSubHeadingListEnd\n`;
+  }
 
   // Check active data for education coursework/research first, then fallback to profile
   const eduCoursework = (d.education && d.education.coursework) ? d.education.coursework : (profile.eduCoursework || '');
@@ -1786,6 +1860,17 @@ async function saveProfileForm(e) {
   const newUrl = document.getElementById('prof-supabase-url') ? document.getElementById('prof-supabase-url').value.trim() : (profile.supabaseUrl || '');
   const newKey = document.getElementById('prof-supabase-key') ? document.getElementById('prof-supabase-key').value.trim() : (profile.supabaseKey || '');
 
+  const projectTitles = document.querySelectorAll('.project-title-input');
+  const projectBullets = document.querySelectorAll('.project-bullets-textarea');
+  const scrapedProjects = [];
+  projectTitles.forEach((input, index) => {
+    const titleVal = input.value.trim();
+    const bulletsVal = projectBullets[index] ? projectBullets[index].value.trim() : '';
+    if (titleVal || bulletsVal) {
+      scrapedProjects.push({ title: titleVal, bullets: bulletsVal });
+    }
+  });
+
   profile = {
     name: document.getElementById('prof-name').value.trim(),
     contact: document.getElementById('prof-contact').value.trim(),
@@ -1798,8 +1883,7 @@ async function saveProfileForm(e) {
     eduResearch: document.getElementById('prof-edu-research') ? document.getElementById('prof-edu-research').value.trim() : (profile.eduResearch || ''),
     workTitle: document.getElementById('prof-work-title') ? document.getElementById('prof-work-title').value.trim() : profile.workTitle,
     workBullets: document.getElementById('prof-work-bullets') ? document.getElementById('prof-work-bullets').value.trim() : profile.workBullets,
-    projectTitle: document.getElementById('prof-project-title') ? document.getElementById('prof-project-title').value.trim() : (profile.projectTitle || ''),
-    projectBullets: document.getElementById('prof-project-bullets') ? document.getElementById('prof-project-bullets').value.trim() : (profile.projectBullets || ''),
+    projects: scrapedProjects,
     achievements: document.getElementById('prof-achievements') ? document.getElementById('prof-achievements').value.trim() : profile.achievements,
     summary: document.getElementById('prof-summary').value.trim(),
     pitch: document.getElementById('prof-pitch').value.trim(),
