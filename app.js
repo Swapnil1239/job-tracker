@@ -1294,7 +1294,6 @@ ${summarySection}${skillsSection}${experienceSection}${projectsSection}${educati
 
   copyToClipboard(latex, 'Overleaf LaTeX Code');
 }
-}
 
 function copySnippet(elementId, label) {
   const el = document.getElementById(elementId);
