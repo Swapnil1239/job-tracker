@@ -41,7 +41,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css?v=1.7.8">
+  <link rel="stylesheet" href="styles.css?v=1.8.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
@@ -928,6 +928,16 @@ alter table careerflow_data disable row level security;</pre>
               <input type="text" id="prof-edu-year" placeholder="e.g. 2018 - 2022 | Honors Graduate" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
             </div>
           </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            <div>
+              <label class="block text-slate-400 mb-1">Relevant Coursework</label>
+              <input type="text" id="prof-edu-coursework" placeholder="e.g. Data Structures, Algorithms, Computer Systems" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1">Research / Extra-curriculars</label>
+              <input type="text" id="prof-edu-research" placeholder="e.g. Published author, IoT Wireless Protocols research at MIT" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
+            </div>
+          </div>
         </div>
 
         <!-- WORK HISTORY SECTION -->
@@ -942,6 +952,21 @@ alter table careerflow_data disable row level security;</pre>
           <div>
             <label class="block text-slate-400 mb-1">Key Responsibilities & Bullet Points</label>
             <textarea id="prof-work-bullets" rows="3" placeholder="• Engineered REST microservices serving 500k+ users...&#10;• Reduced latency by 40% using modern state management...&#10;• Led cross-functional team of 6 software engineers..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:border-indigo-500 focus:outline-none"></textarea>
+          </div>
+        </div>
+
+        <!-- PROJECTS SECTION -->
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3">
+          <h4 class="font-extrabold text-indigo-400 text-xs uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-diagram-project"></i> Key Projects & Code Releases
+          </h4>
+          <div>
+            <label class="block text-slate-400 mb-1">Project Name & Period</label>
+            <input type="text" id="prof-project-title" placeholder="e.g. Minimal Icon Pack (Sept. 2020 - Nov. 2020)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:border-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Project Details & Bullet Points</label>
+            <textarea id="prof-project-bullets" rows="2" placeholder="• Designed and released 100+ minimal iOS icons from scratch...&#10;• Accumulated over $250 in sales on Gumroad..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:border-indigo-500 focus:outline-none"></textarea>
           </div>
         </div>
 
@@ -1012,7 +1037,7 @@ alter table careerflow_data disable row level security;</pre>
   <!-- TOAST CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- App Main JavaScript with Cache Busting v1.7.8 -->
-  <script src="app.js?v=1.7.8"></script>
+  <!-- App Main JavaScript with Cache Busting v1.8.0 -->
+  <script src="app.js?v=1.8.0"></script>
 </body>
 </html>

@@ -15,8 +15,12 @@ let profile = {
   eduDegree: 'B.Tech in Electronics and Telecommunications',
   eduSchool: 'SGGS IE&T , Nanded',
   eduYear: '2017 - 2021',
+  eduCoursework: 'Data Structures, Algorithms, Databases, Computer Systems, Mobile Software Engineering',
+  eduResearch: 'IoT Wearables Research (designed low-power BLE sensor drivers for wearable health monitoring)',
   workTitle: 'Android app developer at Raja Software Labs (2022 - Present)',
   workBullets: '• Improved application performance by 30% and reduced redundant API overhead by 70% through optimized multi-threading strategies utilizing Coroutines and Flow, resulting in enhanced user experience for 50M+ users.\n• Spearheaded the end-to-end development of the Thermostat module, significantly enhancing user engagement and hardware-to-app interaction, and led Android OS version migration initiatives for Nest application modules to ensure seamless backward compatibility and security compliance.\n• Championed automated testing initiatives, scaling module test coverage from 50% to 90%+ using JUnit, Mockito, and Compose UI testing frameworks, and diagnosed and resolved critical race conditions and memory leaks within the Thermostat and Camera modules, dropping overall crash rates by 70%.',
+  projectTitle: 'CommonIntern (2020 - 2021)',
+  projectBullets: '• Built a Python script to automatically apply to jobs on Glassdoor using BeautifulSoup and Selenium.\n• Gained 500+ stars on GitHub and featured on Hackaday front page.',
   achievements: 'Hilt & Clean Architecture Certification | Compose UI Testing Specialist',
   geminiApiKey: '',
   groqApiKey: '',
@@ -202,22 +206,26 @@ async function pushToSupabase() {
         id: 'user_state',
         jobs: jobs,
         profile: {
-          name: profile.name,
-          contact: profile.contact,
-          linkedin: profile.linkedin,
-          portfolio: profile.portfolio,
-          summary: profile.summary,
-          pitch: profile.pitch,
-          eduDegree: profile.eduDegree,
-          eduSchool: profile.eduSchool,
-          eduYear: profile.eduYear,
-          workTitle: profile.workTitle,
-          workBullets: profile.workBullets,
-          achievements: profile.achievements,
-          geminiApiKey: profile.geminiApiKey,
-          groqApiKey: profile.groqApiKey,
-          supabaseUrl: profile.supabaseUrl,
-          supabaseKey: profile.supabaseKey
+          name: profile.name || '',
+          contact: profile.contact || '',
+          linkedin: profile.linkedin || '',
+          portfolio: profile.portfolio || '',
+          summary: profile.summary || '',
+          pitch: profile.pitch || '',
+          eduDegree: profile.eduDegree || '',
+          eduSchool: profile.eduSchool || '',
+          eduYear: profile.eduYear || '',
+          eduCoursework: profile.eduCoursework || '',
+          eduResearch: profile.eduResearch || '',
+          workTitle: profile.workTitle || '',
+          workBullets: profile.workBullets || '',
+          projectTitle: profile.projectTitle || '',
+          projectBullets: profile.projectBullets || '',
+          achievements: profile.achievements || '',
+          geminiApiKey: profile.geminiApiKey || '',
+          groqApiKey: profile.groqApiKey || '',
+          supabaseUrl: profile.supabaseUrl || '',
+          supabaseKey: profile.supabaseKey || ''
         },
         updated_at: new Date().toISOString()
       })
@@ -340,9 +348,15 @@ function updateProfileDOM() {
   if (document.getElementById('prof-edu-degree')) document.getElementById('prof-edu-degree').value = profile.eduDegree || '';
   if (document.getElementById('prof-edu-school')) document.getElementById('prof-edu-school').value = profile.eduSchool || '';
   if (document.getElementById('prof-edu-year')) document.getElementById('prof-edu-year').value = profile.eduYear || '';
+  if (document.getElementById('prof-edu-coursework')) document.getElementById('prof-edu-coursework').value = profile.eduCoursework || '';
+  if (document.getElementById('prof-edu-research')) document.getElementById('prof-edu-research').value = profile.eduResearch || '';
 
   if (document.getElementById('prof-work-title')) document.getElementById('prof-work-title').value = profile.workTitle || '';
   if (document.getElementById('prof-work-bullets')) document.getElementById('prof-work-bullets').value = profile.workBullets || '';
+  
+  if (document.getElementById('prof-project-title')) document.getElementById('prof-project-title').value = profile.projectTitle || '';
+  if (document.getElementById('prof-project-bullets')) document.getElementById('prof-project-bullets').value = profile.projectBullets || '';
+  
   if (document.getElementById('prof-achievements')) document.getElementById('prof-achievements').value = profile.achievements || '';
 
   if (document.getElementById('prof-summary')) document.getElementById('prof-summary').value = profile.summary || '';
@@ -878,6 +892,21 @@ function renderLiveResumePreview(customData) {
         `).join('')}
       </div>
 
+      <!-- PROJECTS -->
+      ${profile.projectTitle ? `
+      <div class="space-y-1">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-900 pb-0.5">Projects</h2>
+        <div class="space-y-0.5">
+          <div class="flex justify-between items-baseline text-[11px] font-bold text-slate-900">
+            <span>${escapeHTML(profile.projectTitle)}</span>
+          </div>
+          <ul class="list-disc list-inside text-[11px] text-slate-800 space-y-0.5 pl-1 leading-snug">
+            ${profile.projectBullets.split('\n').filter(b => b.trim()).map(b => `<li>${escapeHTML(b.replace(/^•\s*/, ''))}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+      ` : ''}
+
       ${data.achievements ? `
       <!-- ACHIEVEMENTS & CERTIFICATIONS -->
       <div class="space-y-1">
@@ -893,6 +922,12 @@ function renderLiveResumePreview(customData) {
           <span>${escapeHTML(data.education.degree)} – <span class="font-normal italic">${escapeHTML(data.education.school)}</span></span>
           <span class="font-normal text-slate-600 italic">${escapeHTML(data.education.year)}</span>
         </div>
+        ${profile.eduCoursework || profile.eduResearch ? `
+        <ul class="list-disc list-inside text-[11px] text-slate-800 space-y-0.5 pl-1 leading-snug mt-1">
+          ${profile.eduCoursework ? `<li><strong>Coursework:</strong> ${escapeHTML(profile.eduCoursework)}</li>` : ''}
+          ${profile.eduResearch ? `<li><strong>Research & Extras:</strong> ${escapeHTML(profile.eduResearch)}</li>` : ''}
+        </ul>
+        ` : ''}
       </div>
     `;
   } else if (formatChoice === 'modern-tech') {
@@ -1064,21 +1099,73 @@ function downloadResumePDF() {
   });
 }
 
-// Overleaf / LaTeX Code Exporter
+// Overleaf / LaTeX Code Exporter (Harshibar's Resume Template v1.7.9)
 function copyLaTeXCode() {
   const d = activeResumeData || {
     name: profile.name || 'Swapnil Sahare',
-    contact: profile.contact || 'swapnilsahare1239@gmail.com',
+    contact: profile.contact || 'swapnilsahare1239@gmail.com | +919309713211',
     linkedin: profile.linkedin || 'https://linkedin.com/in/swapnil-s',
     portfolio: profile.portfolio || 'https://github.com/Swapnil1239',
-    summary: profile.summary || 'Senior Android & Full Stack Software Engineer...',
-    skills: { languages: 'Kotlin, Java, JavaScript, Python', frameworks: 'Android SDK, React, Node.js', tools: 'Git, Docker, AWS' },
-    experience: [{ role: profile.workTitle || 'Senior Software Engineer', period: '2023 - Present', bullets: (profile.workBullets ? profile.workBullets.split('\n') : ['Engineered scalable software.']) }],
-    education: { degree: profile.eduDegree || 'B.S. Computer Science', school: profile.eduSchool || 'University', year: profile.eduYear || '2018 - 2022' },
-    achievements: profile.achievements || 'AWS Certified Solutions Architect'
+    summary: profile.summary || 'Highly skilled Android Developer...',
+    skills: { 
+      languages: 'Kotlin, Java, JavaScript, SQL', 
+      frameworks: 'Jetpack Compose, MVVM, Clean Architecture, Coroutines', 
+      tools: 'Hilt, JUnit, Mockito, BLE/WiFi connectivity, CameraX' 
+    },
+    experience: [{ 
+      role: profile.workTitle || 'Android app developer at Raja Software Labs', 
+      period: '2022 – Present', 
+      bullets: (profile.workBullets ? profile.workBullets.split('\n') : ['Engineered scalable Android applications.']) 
+    }],
+    education: { 
+      degree: profile.eduDegree || 'B.Tech in Electronics and Telecommunications', 
+      school: profile.eduSchool || 'SGGS IE&T , Nanded', 
+      year: profile.eduYear || '2017 – 2021' 
+    },
+    achievements: profile.achievements || ''
   };
 
+  const escapeLaTeX = (str) => {
+    if (!str) return '';
+    return str
+      .replace(/%/g, '\\%')
+      .replace(/&/g, '\\&')
+      .replace(/\$/g, '\\$')
+      .replace(/#/g, '\\#')
+      .replace(/_/g, '\\_');
+  };
+
+  // Parse contact parameters for FontAwesome symbols
+  const contactText = d.contact || '';
+  const contactParts = contactText.split('|').map(p => p.trim());
+  const email = contactParts.find(p => p.includes('@')) || 'swapnilsahare1239@gmail.com';
+  const phone = contactParts.find(p => !p.includes('@') && /\+?\d+/.test(p)) || '+919309713211';
+
+  // Parse role title and company name
+  let companyName = 'Raja Software Labs';
+  let roleTitle = 'Android App Developer';
+  const rawRole = d.experience[0].role || '';
+  const splitParts = rawRole.split(/\s+at\s+/i);
+  if (splitParts.length > 1) {
+    roleTitle = splitParts[0].trim();
+    companyName = splitParts[1].trim();
+  } else {
+    roleTitle = rawRole;
+  }
+
+  // Build conditional LaTeX sections: only render them if data is actually present
+  const summarySection = d.summary ? `\n%-----------PROFESSIONAL SUMMARY-----------\n\\section{PROFESSIONAL SUMMARY}\n\\small{${escapeLaTeX(d.summary)}}\n` : '';
+
+  const skillsSection = (d.skills && (d.skills.languages || d.skills.frameworks || d.skills.tools)) ? `\n%-----------PROGRAMMING SKILLS-----------\n\\section{SKILLS}\n \\begin{itemize}[leftmargin=0in, label={}]\n    \\small{\\item{\n     ${d.skills.languages ? `\\textbf{Languages} {: ${escapeLaTeX(d.skills.languages)}}\\\\ \\vspace{2pt}` : ''}\n     ${d.skills.frameworks ? `\\textbf{Frameworks \\& Tools} {: ${escapeLaTeX(d.skills.frameworks)}}\\\\ \\vspace{2pt}` : ''}\n     ${d.skills.tools ? `\\textbf{Infrastructure \\& Tools} {: ${escapeLaTeX(d.skills.tools)}}` : ''}\n    }}\n \\end{itemize}\n` : '';
+
+  const experienceSection = (d.experience && d.experience.length > 0 && d.experience[0].role) ? `\n%-----------EXPERIENCE-----------\n\\section{EXPERIENCE}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {${escapeLaTeX(companyName)}}{${escapeLaTeX(d.experience[0].period)}}\n      {${escapeLaTeX(roleTitle)}}{}\n      \\resumeItemListStart\n        ${d.experience[0].bullets.map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
+
+  const projectsSection = profile.projectTitle ? `\n%-----------PROJECTS-----------\n\\section{PROJECTS}\n  \\resumeSubHeadingListStart\n    \\resumeProjectHeading\n      {\\textbf{${escapeLaTeX(profile.projectTitle)}}}{}\n      \\resumeItemListStart\n        ${(profile.projectBullets || '').split('\n').filter(b => b.trim()).map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
+
+  const educationSection = (d.education && (d.education.school || d.education.degree)) ? `\n%-----------EDUCATION-----------\n\\section{EDUCATION}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {${escapeLaTeX(d.education.school)}}{${escapeLaTeX(d.education.year)}}\n      {${escapeLaTeX(d.education.degree)}}{}\n      ${profile.eduCoursework || profile.eduResearch ? `\\resumeItemListStart\n        ${profile.eduCoursework ? `\\resumeItem{\\textbf{Coursework}: ${escapeLaTeX(profile.eduCoursework)}}` : ''}\n        ${profile.eduResearch ? `\\resumeItem{\\textbf{Research}: ${escapeLaTeX(profile.eduResearch)}}` : ''}\n      \\resumeItemListEnd` : ''}\n  \\resumeSubHeadingListEnd\n` : '';
+
   const latex = `\\documentclass[letterpaper,11pt]{article}
+
 \\usepackage{latexsym}
 \\usepackage[empty]{fullpage}
 \\usepackage{titlesec}
@@ -1089,69 +1176,110 @@ function copyLaTeXCode() {
 \\usepackage[hidelinks]{hyperref}
 \\usepackage{fancyhdr}
 \\usepackage[english]{babel}
+\\usepackage{tabularx}
+
+% fontawesome
+\\usepackage{fontawesome5}
+
+% fixed width
+\\usepackage[scale=0.90,lf]{FiraMono}
+
+% light-grey
+\\definecolor{light-grey}{gray}{0.83}
+\\definecolor{dark-grey}{gray}{0.3}
+\\definecolor{text-grey}{gray}{.08}
+
+\\DeclareRobustCommand{\\ebseries}{\\fontseries{eb}\\selectfont}
+\\DeclareTextFontCommand{\\texteb}{\\ebseries}
+
+% custom underline
+\\usepackage{contour}
+\\usepackage[normalem]{ulem}
+\\renewcommand{\\ULdepth}{1.8pt}
+\\contourlength{0.8pt}
+\\newcommand{\\myuline}[1]{%
+  \\uline{\\phantom{#1}}%
+  \\llap{\\contour{white}{#1}}%
+}
+
+% custom font: helvetica-style
+\\usepackage{tgheros}
+\\renewcommand*\\familydefault{\\sfdefault} 
+\\usepackage[T1]{fontenc}
 
 \\pagestyle{fancy}
-\\fancyhf{}
+\\fancyhf{} % clear all header and footer fields
+\\fancyfoot{}
 \\renewcommand{\\headrulewidth}{0pt}
 \\renewcommand{\\footrulewidth}{0pt}
 
+% Adjust margins
 \\addtolength{\\oddsidemargin}{-0.5in}
-\\addtolength{\\evensidemargin}{-0.5in}
+\\addtolength{\\evensidemargin}{0in}
 \\addtolength{\\textwidth}{1in}
 \\addtolength{\\topmargin}{-.5in}
 \\addtolength{\\textheight}{1.0in}
 
 \\urlstyle{same}
+
 \\raggedbottom
 \\raggedright
 \\setlength{\\tabcolsep}{0in}
 
-\\titleformat{\\section}{\\vspace{-4pt}\\scshape\\raggedright\\large}{}{0em}{}[\\color{black}\\vline\\hrule height 0.5pt \\vspace{-5pt}]
+% sans serif sections
+\\titleformat {\\section}{
+    \\bfseries \\vspace{2pt} \\raggedright \\large % header section
+}{}{0em}{}[\\color{light-grey} {\\titlerule[2pt]} \\vspace{-4pt}]
+
+%-------------------------
+% Custom commands
+\\newcommand{\\resumeItem}[1]{
+  \\item\\small{
+    {#1 \\vspace{-1pt}}
+  }
+}
+
+\\newcommand{\\resumeSubheading}[4]{
+  \\vspace{-1pt}\\item
+    \\begin{tabular*}{\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{#1} & {\\color{dark-grey}\\small #2}\\vspace{1pt}\\\\
+      \\textit{#3} & {\\color{dark-grey} \\small #4}\\\\
+    \\end{tabular*}\\vspace{-4pt}
+}
+
+\\newcommand{\\resumeProjectHeading}[2]{
+    \\item
+    \\begin{tabular*}{\\textwidth}{l@{\\extracolsep{\\fill}}r}
+      #1 & {\\color{dark-grey}\\small #2} \\\\
+    \\end{tabular*}\\vspace{-4pt}
+}
+
+\\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
+
+\\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0in, label={}]}
+\\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
+\\newcommand{\\resumeItemListStart}{\\begin{itemize}}
+\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{0pt}}
+
+\\color{text-grey}
 
 \\begin{document}
 
+%----------HEADING----------
 \\begin{center}
-    \\textbf{\\Huge \\scshape ${d.name}} \\\\ \\vspace{1pt}
-    \\small ${d.contact} $|$ \\href{${d.linkedin}}{LinkedIn} $|$ \\href{${d.portfolio}}{Portfolio}
+    \\textbf{\\Huge ${escapeLaTeX(d.name)}} \\\\ \\vspace{5pt}
+    \\small 
+    \\faPhone* \\texttt{${escapeLaTeX(phone)}} \\hspace{1.5pt} $|$ 
+    \\hspace{1.5pt} \\faEnvelope \\hspace{2pt} \\texttt{${escapeLaTeX(email)}} \\hspace{1.5pt} $|$ 
+    \\hspace{1.5pt} \\faLinkedin \\hspace{2pt} \\href{${d.linkedin}}{\\myuline{LinkedIn}} \\hspace{1.5pt} $|$
+    \\hspace{1.5pt} \\faGithub \\hspace{2pt} \\href{${d.portfolio}}{\\myuline{Portfolio}}
+    \\\\ \\vspace{-3pt}
 \\end{center}
-
-\\section{Professional Summary}
-\\small{${d.summary}}
-
-\\section{Technical Skills}
-\\begin{itemize}[leftmargin=0.15in, label={}]
-    \\small{\\item{
-     \\textbf{Languages}{: ${d.skills.languages}} \\\\
-     \\textbf{Frameworks}{: ${d.skills.frameworks}} \\\\
-     \\textbf{Developer Tools}{: ${d.skills.tools}}
-    }}
-\\end{itemize}
-
-\\section{Work Experience}
-\\begin{itemize}[leftmargin=0.15in, label={}]
-  \\item
-    \\begin{tabular*}{\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
-      \\textbf{${d.experience[0].role}} & ${d.experience[0].period} \\\\
-    \\end{tabular*}\\vspace{-5pt}
-    \\begin{itemize}
-      ${d.experience[0].bullets.map(b => `\\item \\small{${b.replace(/^•\s*/, '')}}`).join('\n      ')}
-    \\end{itemize}
-\\end{itemize}
-
-\\section{Education}
-\\begin{itemize}[leftmargin=0.15in, label={}]
-  \\item
-    \\begin{tabular*}{\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
-      \\textbf{${d.education.degree}} - ${d.education.school} & ${d.education.year} \\\\
-    \\end{tabular*}
-\\end{itemize}
-
-${d.achievements ? `\\section{Key Achievements}
-\\small{${d.achievements}}` : ''}
-
+${summarySection}${skillsSection}${experienceSection}${projectsSection}${educationSection}
 \\end{document}`;
 
   copyToClipboard(latex, 'Overleaf LaTeX Code');
+}
 }
 
 function copySnippet(elementId, label) {
@@ -1653,8 +1781,12 @@ async function saveProfileForm(e) {
     eduDegree: document.getElementById('prof-edu-degree') ? document.getElementById('prof-edu-degree').value.trim() : profile.eduDegree,
     eduSchool: document.getElementById('prof-edu-school') ? document.getElementById('prof-edu-school').value.trim() : profile.eduSchool,
     eduYear: document.getElementById('prof-edu-year') ? document.getElementById('prof-edu-year').value.trim() : profile.eduYear,
+    eduCoursework: document.getElementById('prof-edu-coursework') ? document.getElementById('prof-edu-coursework').value.trim() : (profile.eduCoursework || ''),
+    eduResearch: document.getElementById('prof-edu-research') ? document.getElementById('prof-edu-research').value.trim() : (profile.eduResearch || ''),
     workTitle: document.getElementById('prof-work-title') ? document.getElementById('prof-work-title').value.trim() : profile.workTitle,
     workBullets: document.getElementById('prof-work-bullets') ? document.getElementById('prof-work-bullets').value.trim() : profile.workBullets,
+    projectTitle: document.getElementById('prof-project-title') ? document.getElementById('prof-project-title').value.trim() : (profile.projectTitle || ''),
+    projectBullets: document.getElementById('prof-project-bullets') ? document.getElementById('prof-project-bullets').value.trim() : (profile.projectBullets || ''),
     achievements: document.getElementById('prof-achievements') ? document.getElementById('prof-achievements').value.trim() : profile.achievements,
     summary: document.getElementById('prof-summary').value.trim(),
     pitch: document.getElementById('prof-pitch').value.trim(),
