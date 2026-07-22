@@ -1040,7 +1040,13 @@ async function generateTailoredResume() {
         education: {
           degree: profile.eduDegree || 'B.S. in Computer Science',
           school: profile.eduSchool || 'State University',
-          year: profile.eduYear || '2018 – 2022'
+          year: profile.eduYear || '2018 – 2022',
+          coursework: profile.eduCoursework || '',
+          research: profile.eduResearch || ''
+        },
+        projects: {
+          title: profile.projectTitle || '',
+          bullets: profile.projectBullets ? profile.projectBullets.split('\n') : []
         },
         achievements: profile.achievements || '',
         skills: {
@@ -1160,9 +1166,17 @@ function copyLaTeXCode() {
 
   const experienceSection = (d.experience && d.experience.length > 0 && d.experience[0].role) ? `\n%-----------EXPERIENCE-----------\n\\section{EXPERIENCE}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {${escapeLaTeX(companyName)}}{${escapeLaTeX(d.experience[0].period)}}\n      {${escapeLaTeX(roleTitle)}}{}\n      \\resumeItemListStart\n        ${d.experience[0].bullets.map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
 
-  const projectsSection = profile.projectTitle ? `\n%-----------PROJECTS-----------\n\\section{PROJECTS}\n  \\resumeSubHeadingListStart\n    \\resumeProjectHeading\n      {\\textbf{${escapeLaTeX(profile.projectTitle)}}}{}\n      \\resumeItemListStart\n        ${(profile.projectBullets || '').split('\n').filter(b => b.trim()).map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
+  // Check active data for projects first, then fallback to profile
+  const projectTitle = (d.projects && d.projects.title) ? d.projects.title : (profile.projectTitle || '');
+  const projectBullets = (d.projects && d.projects.bullets) ? (Array.isArray(d.projects.bullets) ? d.projects.bullets.join('\n') : d.projects.bullets) : (profile.projectBullets || '');
 
-  const educationSection = (d.education && (d.education.school || d.education.degree)) ? `\n%-----------EDUCATION-----------\n\\section{EDUCATION}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {${escapeLaTeX(d.education.school)}}{${escapeLaTeX(d.education.year)}}\n      {${escapeLaTeX(d.education.degree)}}{}\n      ${profile.eduCoursework || profile.eduResearch ? `\\resumeItemListStart\n        ${profile.eduCoursework ? `\\resumeItem{\\textbf{Coursework}: ${escapeLaTeX(profile.eduCoursework)}}` : ''}\n        ${profile.eduResearch ? `\\resumeItem{\\textbf{Research}: ${escapeLaTeX(profile.eduResearch)}}` : ''}\n      \\resumeItemListEnd` : ''}\n  \\resumeSubHeadingListEnd\n` : '';
+  const projectsSection = projectTitle ? `\n%-----------PROJECTS-----------\n\\section{PROJECTS}\n  \\resumeSubHeadingListStart\n    \\resumeProjectHeading\n      {\\textbf{${escapeLaTeX(projectTitle)}}}{}\n      \\resumeItemListStart\n        ${projectBullets.split('\n').filter(b => b.trim()).map(b => `\\resumeItem{${escapeLaTeX(b.replace(/^•\s*/, ''))}}`).join('\n        ')}\n      \\resumeItemListEnd\n  \\resumeSubHeadingListEnd\n` : '';
+
+  // Check active data for education coursework/research first, then fallback to profile
+  const eduCoursework = (d.education && d.education.coursework) ? d.education.coursework : (profile.eduCoursework || '');
+  const eduResearch = (d.education && d.education.research) ? d.education.research : (profile.eduResearch || '');
+
+  const educationSection = (d.education && (d.education.school || d.education.degree)) ? `\n%-----------EDUCATION-----------\n\\section{EDUCATION}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {${escapeLaTeX(d.education.school)}}{${escapeLaTeX(d.education.year)}}\n      {${escapeLaTeX(d.education.degree)}}{}\n      ${eduCoursework || eduResearch ? `\\resumeItemListStart\n        ${eduCoursework ? `\\resumeItem{\\textbf{Coursework}: ${escapeLaTeX(eduCoursework)}}` : ''}\n        ${eduResearch ? `\\resumeItem{\\textbf{Research}: ${escapeLaTeX(eduResearch)}}` : ''}\n      \\resumeItemListEnd` : ''}\n  \\resumeSubHeadingListEnd\n` : '';
 
   const latex = `\\documentclass[letterpaper,11pt]{article}
 
