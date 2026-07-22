@@ -6,18 +6,18 @@ const PROFILE_KEY = 'careerflow_profile_data';
 // Application State
 let jobs = [];
 let profile = {
-  name: 'Alex Vance',
-  contact: 'alex.vance@example.com | (555) 019-2831',
-  linkedin: 'https://linkedin.com/in/alexvance-dev',
-  portfolio: 'https://github.com/alexvance-code',
-  summary: 'Full-stack software engineer with 5+ years of experience building high-performance web applications, cloud microservices, and slick user interfaces with React, Node.js, and TypeScript.',
-  pitch: 'I excel at bringing ambitious products from zero to one. Passionate about system design, frontend performance, and delivering memorable developer and end-user experiences.',
-  eduDegree: 'B.S. in Computer Science',
-  eduSchool: 'State University',
-  eduYear: '2018 - 2022 | Honors Graduate',
-  workTitle: 'Senior Full Stack Software Engineer at TechScale Solutions (2023 - Present)',
-  workBullets: '• Engineered responsive web applications and REST APIs serving 500k+ monthly active users.\n• Reduced core application render latency by 40% with client state optimization and code splitting.\n• Mentored junior engineers and led agile cross-functional sprint reviews.',
-  achievements: 'AWS Certified Solutions Architect | 1st Place Hackathon Winner | Developer of the Year 2025',
+  name: 'Swapnil Sahare',
+  contact: 'swapnilsahare1239@gmail.com | +919309713211',
+  linkedin: 'https://linkedin.com/in/swapnil-s',
+  portfolio: 'https://github.com/Swapnil1239',
+  summary: 'Highly skilled Android Developer with 4+ years of experience building scalable Android applications using Kotlin, specializing in performance optimization, architecture, and automated testing to deliver high-performance mobile solutions for 50M+ users in the Google Home and Nest ecosystem.',
+  pitch: 'I excel at building fluid mobile interfaces and reliable hardware-to-app features. Passionate about automated testing, performance profiling, and Android platform systems.',
+  eduDegree: 'B.Tech in Electronics and Telecommunications',
+  eduSchool: 'SGGS IE&T , Nanded',
+  eduYear: '2017 - 2021',
+  workTitle: 'Android app developer at Raja Software Labs (2022 - Present)',
+  workBullets: '• Improved application performance by 30% and reduced redundant API overhead by 70% through optimized multi-threading strategies utilizing Coroutines and Flow, resulting in enhanced user experience for 50M+ users.\n• Spearheaded the end-to-end development of the Thermostat module, significantly enhancing user engagement and hardware-to-app interaction, and led Android OS version migration initiatives for Nest application modules to ensure seamless backward compatibility and security compliance.\n• Championed automated testing initiatives, scaling module test coverage from 50% to 90%+ using JUnit, Mockito, and Compose UI testing frameworks, and diagnosed and resolved critical race conditions and memory leaks within the Thermostat and Camera modules, dropping overall crash rates by 70%.',
+  achievements: 'Hilt & Clean Architecture Certification | Compose UI Testing Specialist',
   geminiApiKey: '',
   groqApiKey: '',
   supabaseUrl: '',
@@ -768,36 +768,53 @@ function renderLiveResumePreview(customData) {
   }
 
   const data = customData || activeResumeData || {
-    name: profile.name || 'Alex Vance',
-    contact: profile.contact || 'alex.vance@example.com | (555) 019-2831',
-    linkedin: profile.linkedin || 'https://linkedin.com/in/alexvance-dev',
-    portfolio: profile.portfolio || 'https://github.com/alexvance-code',
-    summary: profile.summary || 'Full-stack software engineer with 5+ years building scalable web applications and cloud microservices.',
+    name: profile.name || 'Swapnil Sahare',
+    contact: profile.contact || 'swapnilsahare1239@gmail.com | +919309713211',
+    linkedin: profile.linkedin || 'https://linkedin.com/in/swapnil-s',
+    portfolio: profile.portfolio || 'https://github.com/Swapnil1239',
+    summary: profile.summary || 'Highly skilled Android Developer...',
     matchScore: 96,
     matchedKeywords: ['React', 'TypeScript', 'Node.js', 'REST APIs', 'System Architecture'],
     education: {
-      degree: profile.eduDegree || 'B.S. in Computer Science',
-      school: profile.eduSchool || 'State University',
-      year: profile.eduYear || '2018 – 2022'
+      degree: profile.eduDegree || 'B.Tech in Electronics and Telecommunications',
+      school: profile.eduSchool || 'SGGS IE&T , Nanded',
+      year: profile.eduYear || '2017 – 2021'
     },
-    achievements: profile.achievements || 'AWS Certified Solutions Architect | Developer of the Year 2025',
+    achievements: profile.achievements || '',
     skills: {
-      languages: 'JavaScript, TypeScript, Python, HTML5/CSS3, SQL',
-      frameworks: 'React, Next.js, Node.js, Express, Tailwind CSS, REST APIs',
-      tools: 'Git, Docker, AWS, PostgreSQL, Vercel, Jest, CI/CD'
+      languages: 'Kotlin, Java, JavaScript',
+      frameworks: 'Android SDK, Jetpack Compose, MVVM, Clean Architecture',
+      tools: 'Git, Docker, AWS, Hilt, JUnit, Mockito'
     },
     experience: [
       {
         role: roleTitle,
         period: workPeriod,
         bullets: (profile.workBullets ? profile.workBullets.split('\n').filter(b => b.trim()) : [
-          'Engineered responsive web applications and REST APIs serving 500k+ monthly active users.',
-          'Reduced core application render latency by 40% with client state optimization and code splitting.',
-          'Mentored junior engineers and led agile cross-functional sprint reviews.'
+          'Engineered responsive mobile applications serving 50M+ active users.',
+          'Reduced app launch latency and optimized multi-threading with Coroutines.'
         ])
       }
     ]
   };
+
+  // Safe checks: Clean up role title & extract dates for all cases (fallback and AI customData)
+  if (data.experience && data.experience[0]) {
+    let exp = data.experience[0];
+    const dateRegex = /\(([^)]*(?:\d{4}|\bPresent\b)[^)]*)\)$/i;
+    const dateMatch = exp.role.match(dateRegex);
+    if (dateMatch) {
+      exp.period = dateMatch[1].trim();
+      exp.role = exp.role.replace(dateRegex, '').trim();
+    }
+  }
+
+  // Safe checks: Ensure education is never blank
+  if (data.education) {
+    data.education.degree = data.education.degree || profile.eduDegree || 'B.Tech in Electronics and Telecommunications';
+    data.education.school = data.education.school || profile.eduSchool || 'SGGS IE&T , Nanded';
+    data.education.year = data.education.year || profile.eduYear || '2017 - 2021';
+  }
 
   // Update ATS Score Badge UI
   const scoreElem = document.getElementById('ats-match-percent');
